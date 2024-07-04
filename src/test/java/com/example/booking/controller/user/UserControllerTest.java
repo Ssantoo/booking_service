@@ -6,7 +6,8 @@ import static com.epages.restdocs.apispec.ResourceDocumentation.headerWithName;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -15,12 +16,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper;
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
+import com.example.booking.controller.user.dto.ChargeRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -35,6 +38,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 @AutoConfigureMockMvc
 @WebMvcTest(UserController.class)
+@AutoConfigureRestDocs(outputDir = "target/snippets")
 @ExtendWith({SpringExtension.class, RestDocumentationExtension.class, MockitoExtension.class})
 public class UserControllerTest {
 
@@ -64,5 +68,29 @@ public class UserControllerTest {
 
     }
 
+
+    //유저포인트 조회
+    @Test
+    public void 유저_포인트_조회() throws Exception {
+        mockMvc.perform(get("/api/user/points")
+                        .param("userId", "1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(1))
+                .andExpect(jsonPath("$.points").value(1000));
+    }
+
+    @Test
+    public void 유저_포인트_충전() throws Exception {
+        ChargeRequest chargeRequest = new ChargeRequest(1L, 100);
+
+        mockMvc.perform(post("/api/user/charge")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(chargeRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(1))
+                .andExpect(jsonPath("$.points").value(1000))
+                .andDo(print());
+    }
 
 }
