@@ -2,10 +2,14 @@ package com.example.booking.controller.user;
 
 
 import com.example.booking.controller.user.dto.ChargeRequest;
+import com.example.booking.controller.user.dto.PaymentHistoryResponse;
 import com.example.booking.controller.user.dto.PointResponse;
 import com.example.booking.controller.user.dto.TokenResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
@@ -40,6 +44,18 @@ public class UserController {
     public ResponseEntity<PointResponse> chargePoints(@RequestBody ChargeRequest chargeRequest) {
         PointResponse response = new PointResponse(chargeRequest.getUserId(), 1000);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 유저 구매 내역 조회
+     */
+    @GetMapping("/{userId}/payment-history")
+    public ResponseEntity<List<PaymentHistoryResponse>> getPaymentHistory(@PathVariable long userId) {
+        List<PaymentHistoryResponse> paymentHistory = Arrays.asList(
+                new PaymentHistoryResponse(userId, 1, "2024-07-05", "Concert A", 100),
+                new PaymentHistoryResponse(userId, 2, "2024-07-06", "Concert B", 150)
+        );
+        return ResponseEntity.ok(paymentHistory);
     }
 
 }

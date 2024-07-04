@@ -1,6 +1,6 @@
 # 예약 서비스
 
-## 프로젝트 MileStone
+## 프로젝트 MileStone, API명세서
 
 [구글 Docs 문서](https://docs.google.com/spreadsheets/d/1S2TsgAATEp7fZUqq_fYa20B5rVjvJuVm4wjqANgiSU4/edit?usp=sharing)
 

@@ -93,4 +93,16 @@ public class UserControllerTest {
                 .andDo(print());
     }
 
+    @Test
+    public void 유저_구매내역_조회() throws Exception {
+        mockMvc.perform(get("/api/user/1/payment-history")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].userId").value(1))
+                .andExpect(jsonPath("$[0].seatNumber").value(1))
+                .andExpect(jsonPath("$[0].date").value("2024-07-05"))
+                .andExpect(jsonPath("$[0].concertName").value("Concert A"))
+                .andExpect(jsonPath("$[0].amount").value(100));
+    }
+
 }
