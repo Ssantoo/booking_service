@@ -11,4 +11,6 @@
 ## ERD
 ![concertERD](https://github.com/Ssantoo/booking_service/assets/112769188/28e294ad-7a17-4902-8e69-d72242b03150)
 
-
+## MOCK Test Code
+[Mock TEST CODE](https://github.com/Ssantoo/booking_service/pull/1)
+-> restdocs-api 작성 시도 중
