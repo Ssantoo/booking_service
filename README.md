@@ -1,6 +1,6 @@
 # 예약 서비스
 
-## 프로젝트 MileStone
+## 프로젝트 MileStone, API명세서
 
 [구글 Docs 문서](https://docs.google.com/spreadsheets/d/1S2TsgAATEp7fZUqq_fYa20B5rVjvJuVm4wjqANgiSU4/edit?usp=sharing)
 
@@ -14,7 +14,6 @@
 ## MOCK Test Code
 [Mock TEST CODE](https://github.com/Ssantoo/booking_service/pull/1)
 -> restdocs-api 작성 시도 중
-
 
 ## API Specs
 
@@ -64,3 +63,4 @@
 - 해당 날짜부터 콘서트 시작날짜까지 선택가능
 - 콘서트예약 오픈날짜
 - 콘서트날짜
+
