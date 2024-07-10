@@ -6,16 +6,37 @@
 
 ## 시퀀스 다이어그램
 
+<details>
+    <summary></summary>
+
 ![시퀀스다이어그램](docs/시퀀스다이어그램.png)
 
+</details>
+
 ## ERD
+
+<details>
+    <summary></summary>
+
 ![concertERD](https://github.com/Ssantoo/booking_service/assets/112769188/28e294ad-7a17-4902-8e69-d72242b03150)
 
+</details>
+
+
 ## MOCK Test Code
+
+<details>
+    <summary></summary>
+
 [Mock TEST CODE](https://github.com/Ssantoo/booking_service/pull/1)
+</details>
+
 -> restdocs-api 작성 시도 중
 
 ## API Specs
+
+<details>
+    <summary></summary>
 
 1️⃣ **`주요` 유저 대기열 토큰 기능    post**
 
@@ -26,7 +47,7 @@
 > 기본적으로 폴링으로 본인의 대기열을 확인한다고 가정하며, 다른 방안 또한 고려해보고 구현해 볼 수 있습니다.
 > 
 
-**2️⃣ `기본` 예약 가능 날짜 / 좌석 API  get**
+2️⃣ `기본` 예약 가능 날짜 / 좌석 API  get**
 
 - 예약가능한 날짜와 해당 날짜의 좌석을 조회하는 API 를 각각 작성합니다.
 - 예약 가능한 날짜 목록을 조회할 수 있습니다.
@@ -63,4 +84,8 @@
 - 해당 날짜부터 콘서트 시작날짜까지 선택가능
 - 콘서트예약 오픈날짜
 - 콘서트날짜
+  
+</details>
+
+
 
