@@ -1,5 +1,6 @@
 package com.example.booking.controller.user.dto;
 
+import com.example.booking.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -7,12 +8,19 @@ import lombok.Getter;
 @Builder
 public class PointResponse {
 
-    private long userId;
-    private int points;
+    private final long userId;
+    private final int point;
 
-    public PointResponse(long userId, int points) {
+    public PointResponse(long userId, int point) {
         this.userId = userId;
-        this.points = points;
+        this.point = point;
+    }
+
+    public static PointResponse from(User user) {
+        return PointResponse.builder()
+                .userId(user.getId())
+                .point(user.getPoint())
+                .build();
     }
 
 
