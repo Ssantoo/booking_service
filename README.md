@@ -1,8 +1,19 @@
 # 예약 서비스
 
+## Swagger
+
+<details>
+    <summary></summary>
+
+![swagger](docs/swagger.png)
+
+</details>
+
 ## 프로젝트 MileStone, API명세서
 
 [구글 Docs 문서](https://docs.google.com/spreadsheets/d/1S2TsgAATEp7fZUqq_fYa20B5rVjvJuVm4wjqANgiSU4/edit?usp=sharing)
+
+
 
 ## 시퀀스 다이어그램
 
