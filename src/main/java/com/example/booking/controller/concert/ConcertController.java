@@ -66,7 +66,7 @@ public class ConcertController {
     @Operation(summary = "콘서트 좌석 좌석 예약 요청")
     @PostMapping("/reserve-seat")
     public ResponseEntity<ReservationResponse> reserveSeat(@RequestBody ReservationRequest reservationRequest) {
-        ReservationResponse response = ReservationResponse.from(concertService.reserve(reservationRequest.toDomain()));
+        ReservationResponse response = ReservationResponse.from(concertService.reserve(reservationRequest.toDomain(), reservationRequest.getToken()));
         return ResponseEntity.ok(response);
     }
 
