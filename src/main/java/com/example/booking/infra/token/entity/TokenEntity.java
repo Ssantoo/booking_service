@@ -38,6 +38,9 @@ public class TokenEntity {
     @Column(nullable = false)
     private LocalDateTime lastActivityAt;
 
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
     public Token toModel() {
         return Token.builder()
                 .id(id)
@@ -46,6 +49,7 @@ public class TokenEntity {
                 .expiredAt(expiredAt)
                 .status(status)
                 .lastActivityAt(lastActivityAt)
+                .createdAt(createdAt)
                 .build();
     }
 
@@ -57,6 +61,7 @@ public class TokenEntity {
                 .expiredAt(token.getExpiredAt())
                 .status(token.getStatus())
                 .lastActivityAt(token.getLastActivityAt())
+                .createdAt(token.getCreatedAt())
                 .build();
     }
 }

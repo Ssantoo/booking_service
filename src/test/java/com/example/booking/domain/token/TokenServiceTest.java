@@ -1,5 +1,6 @@
 package com.example.booking.domain.token;
 
+import com.example.booking.common.exception.UserNotFoundException;
 import com.example.booking.domain.queue.Token;
 import com.example.booking.domain.queue.TokenRepository;
 import com.example.booking.domain.queue.TokenService;
@@ -114,5 +115,51 @@ public class TokenServiceTest {
         });
     }
 
+    @Test
+    public void 유저_대기열_위치_조회_성공() {
+        Long userId1 = 1L;
+        Long userId2 = 2L;
+        Long userId3 = 3L;
 
+        Token token1 = Token.builder().id(1L).userId(userId1).createdAt(LocalDateTime.now().minusMinutes(10)).build();
+        Token token2 = Token.builder().id(2L).userId(userId2).createdAt(LocalDateTime.now().minusMinutes(5)).build();
+        Token token3 = Token.builder().id(3L).userId(userId3).createdAt(LocalDateTime.now().minusMinutes(1)).build();
+
+        given(tokenRepository.findAllByOrderByCreatedAt()).willReturn(List.of(token1, token2, token3));
+
+        int position = tokenService.getUserPositionInQueue(userId2);
+        assertEquals(2, position);
+    }
+
+    @Test
+    public void 유저_대기열_위치_조회_유저없음() {
+        Long userId = 1L;
+
+        given(tokenRepository.findAllByOrderByCreatedAt()).willReturn(List.of());
+
+        assertThrows(UserNotFoundException.class, () -> {
+            tokenService.getUserPositionInQueue(userId);
+        });
+    }
+
+    @Test
+    public void 대기열_유저_활성화_성공() {
+        Long userId1 = 1L;
+        Long userId2 = 2L;
+
+        Token token1 = Token.builder().id(1L).userId(userId1).status(TokenStatus.WAITING).createdAt(LocalDateTime.now().minusMinutes(10)).build();
+        Token token2 = Token.builder().id(2L).userId(userId2).status(TokenStatus.WAITING).createdAt(LocalDateTime.now().minusMinutes(5)).build();
+
+        given(tokenRepository.countByStatus(TokenStatus.ACTIVE)).willReturn(50);
+        given(tokenRepository.findTopByStatusOrderByCreatedAt(TokenStatus.WAITING, 50)).willReturn(List.of(token1, token2));
+
+        tokenService.activateQueuedUsers();
+
+        ArgumentCaptor<Token> tokenCaptor = ArgumentCaptor.forClass(Token.class);
+        verify(tokenRepository, times(2)).save(tokenCaptor.capture());
+
+        List<Token> capturedTokens = tokenCaptor.getAllValues();
+        assertEquals(TokenStatus.ACTIVE, capturedTokens.get(0).getStatus());
+        assertEquals(TokenStatus.ACTIVE, capturedTokens.get(1).getStatus());
+    }
 }

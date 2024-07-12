@@ -1,12 +1,14 @@
 package com.example.booking.domain.queue;
 
 import com.example.booking.common.exception.NotReservableException;
+import com.example.booking.common.exception.UserNotFoundException;
 import com.example.booking.infra.token.entity.TokenStatus;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -18,6 +20,7 @@ public class Token {
     private final LocalDateTime expiredAt;
     private final TokenStatus status;
     private final LocalDateTime lastActivityAt;
+    private final LocalDateTime createdAt;
 
     public static Token generate(Long userId) {
         String tokenString = UUID.randomUUID().toString();
@@ -28,6 +31,7 @@ public class Token {
                 .expiredAt(expiresAt)
                 .status(TokenStatus.WAITING)
                 .lastActivityAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
@@ -43,6 +47,7 @@ public class Token {
                 .expiredAt(expiredAt)
                 .status(TokenStatus.EXPIRED)
                 .lastActivityAt(lastActivityAt)
+                .createdAt(createdAt)
                 .build();
     }
 
@@ -54,6 +59,7 @@ public class Token {
                 .expiredAt(expiredAt)
                 .status(TokenStatus.ACTIVE)
                 .lastActivityAt(LocalDateTime.now())
+                .createdAt(createdAt)
                 .build();
     }
 
@@ -65,6 +71,7 @@ public class Token {
                 .expiredAt(expiredAt)
                 .status(status)
                 .lastActivityAt(LocalDateTime.now())
+                .createdAt(createdAt)
                 .build();
     }
 
@@ -76,5 +83,14 @@ public class Token {
         if (this.status != TokenStatus.ACTIVE || this.isExpired()) {
             throw new NotReservableException("토큰 상태를 확인해주세요.");
         }
+    }
+
+    public static int getUserPositionInQueue(List<Token> queue, Long userId) {
+        for (int i = 0; i < queue.size(); i++) {
+            if (queue.get(i).getUserId().equals(userId)) {
+                return i + 1;
+            }
+        }
+        throw new UserNotFoundException("유저를 찾을 수 없습니다");
     }
 }

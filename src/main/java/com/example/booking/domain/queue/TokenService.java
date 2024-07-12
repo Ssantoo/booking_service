@@ -1,10 +1,11 @@
 package com.example.booking.domain.queue;
 
+import com.example.booking.common.exception.UserNotFoundException;
+import com.example.booking.infra.token.entity.TokenStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.example.booking.infra.token.entity.TokenEntity;
+
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +14,8 @@ import java.util.Optional;
 public class TokenService {
 
     private final TokenRepository tokenRepository;
+
+    private static final int MAX_ACTIVE_USERS = 100;
 
     public Token generate(Long userId) {
 
@@ -43,4 +46,20 @@ public class TokenService {
     public Optional<Token> findByToken(String token) {
         return tokenRepository.findByToken(token);
     }
+
+    public void activateQueuedUsers() {
+        int activeUsers = tokenRepository.countByStatus(TokenStatus.ACTIVE);
+        if (activeUsers < MAX_ACTIVE_USERS) {
+            List<Token> queuedUsers = tokenRepository.findTopByStatusOrderByCreatedAt(TokenStatus.WAITING, MAX_ACTIVE_USERS - activeUsers);
+            queuedUsers.stream()
+                    .map(Token::activate)
+                    .forEach(tokenRepository::save);
+        }
+    }
+
+    public int getUserPositionInQueue(Long userId) {
+        List<Token> queue = tokenRepository.findAllByOrderByCreatedAt();
+        return Token.getUserPositionInQueue(queue, userId);
+    }
+
 }
