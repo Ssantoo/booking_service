@@ -27,8 +27,11 @@ public class ReservationEntity {
     @Column(nullable = false)
     private Long concertScheduleId;
 
-    @Column(nullable = false)
-    private Long seatId;
+//    @Column(nullable = false)
+//    private Long seatId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seat_id", insertable = false, updatable = false)
+    private SeatEntity seat;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -48,7 +51,7 @@ public class ReservationEntity {
                 .id(id)
                 .userId(userId)
                 .concertScheduleId(concertScheduleId)
-                .seatId(seatId)
+                .seat(seat.toModel())
                 .status(status)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
@@ -61,7 +64,7 @@ public class ReservationEntity {
                 .id(reservation.getId())
                 .userId(reservation.getUserId())
                 .concertScheduleId(reservation.getConcertScheduleId())
-                .seatId(reservation.getSeatId())
+                .seat(SeatEntity.from(reservation.getSeat()))
                 .status(reservation.getStatus())
                 .createdAt(reservation.getCreatedAt())
                 .updatedAt(reservation.getUpdatedAt())

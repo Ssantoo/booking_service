@@ -1,11 +1,18 @@
 package com.example.booking.domain.concert;
 
 import com.example.booking.common.exception.AlreadyOccupiedException;
+import com.example.booking.controller.concert.dto.ReservationRequest;
+import com.example.booking.domain.queue.Token;
+import com.example.booking.domain.queue.TokenService;
 import com.example.booking.domain.user.User;
 import com.example.booking.domain.user.UserRepository;
 import com.example.booking.domain.user.UserService;
+import com.example.booking.infra.concert.entity.ReservationEntity;
 import com.example.booking.infra.concert.entity.ReservationStatus;
+import com.example.booking.infra.concert.entity.SeatEntity;
 import com.example.booking.infra.concert.entity.SeatStatus;
+import com.example.booking.infra.token.entity.TokenStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -17,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,9 +45,25 @@ public class ConcertServiceTest {
     @Mock
     private ReservationRepository reservationRepository;
 
+    @Mock
+    private TokenService tokenService;
+
     @InjectMocks
     private ConcertService concertService;
 
+    private Token activeToken;
+
+    @BeforeEach
+    public void setUp() {
+        activeToken = Token.builder()
+                .id(1L)
+                .userId(1L)
+                .token(UUID.randomUUID().toString())
+                .expiredAt(LocalDateTime.now().plusHours(1))
+                .status(TokenStatus.ACTIVE)
+                .lastActivityAt(LocalDateTime.now())
+                .build();
+    }
     @Test
     public void 콘서트_목록_조회() {
         List<Concert> mockConcertList = List.of(
@@ -103,54 +127,83 @@ public class ConcertServiceTest {
 
     @Test
     public void 예약_성공() {
-        Reservation mockReservation = Reservation.builder()
+        Schedule mockSchedule = Schedule.builder().id(1L).dateTime(LocalDateTime.now()).totalSeats(100).availableSeats(50).concert(new Concert(1L, "해리포터 1", "마법사의돌")).build();
+
+        Seat mockSeat = Seat.builder()
                 .id(1L)
-                .userId(1L)
-                .concertScheduleId(1L)
-                .seatId(1L)
-                .status(ReservationStatus.PENDING)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .totalPrice(100)
+                .seatNumber(1)
+                .price(100)
+                .status(SeatStatus.AVAILABLE)
+                .schedule(mockSchedule)
                 .build();
 
-        given(reservationRepository.findByConcertScheduleIdAndSeatIdForUpdate(1L, 1L)).willReturn(Optional.empty());
-        given(reservationRepository.save(mockReservation)).willReturn(mockReservation);
+        ReservationRequest request = ReservationRequest.builder()
+                .token(activeToken.getToken())
+                .concertScheduleId(1L)
+                .seat(mockSeat)
+                .userId(1L)
+                .build();
 
-        Reservation result = concertService.reserve(mockReservation);
+        Reservation mockReservation = request.toDomain();
+
+        given(tokenService.findByToken(activeToken.getToken())).willReturn(Optional.of(activeToken));
+        given(seatRepository.findByIdForUpdate(1L)).willReturn(Optional.of(mockSeat));
+        given(reservationRepository.save(any(Reservation.class))).willReturn(mockReservation);
+
+        Reservation result = concertService.reserve(mockReservation, activeToken.getToken());
 
         assertNotNull(result);
         assertEquals(ReservationStatus.PENDING, result.getStatus());
+        assertEquals(SeatStatus.HOLD, result.getSeat().getStatus());
     }
 
     @Test
     public void 예약_실패_이미_예약된_좌석() {
+        Schedule mockSchedule = Schedule.builder().id(1L).dateTime(LocalDateTime.now()).totalSeats(100).availableSeats(50).concert(new Concert(1L, "해리포터 1", "마법사의돌")).build();
+        Seat mockSeat = Seat.builder()
+                .id(1L)
+                .seatNumber(1)
+                .price(100)
+                .status(SeatStatus.HOLD)
+                .schedule(mockSchedule)
+                .build();
+
         Reservation mockReservation = Reservation.builder()
                 .id(1L)
                 .userId(1L)
                 .concertScheduleId(1L)
-                .seatId(1L)
+                .seat(mockSeat)
                 .status(ReservationStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .totalPrice(100)
                 .build();
 
-        given(reservationRepository.findByConcertScheduleIdAndSeatIdForUpdate(1L, 1L)).willReturn(Optional.of(mockReservation));
+        given(tokenService.findByToken(activeToken.getToken())).willReturn(Optional.of(activeToken));
+        given(seatRepository.findByIdForUpdate(1L)).willReturn(Optional.of(mockSeat));
 
         assertThrows(AlreadyOccupiedException.class, () -> {
-            concertService.reserve(mockReservation);
+            concertService.reserve(mockReservation, activeToken.getToken());
         });
     }
 
     @Test
     public void 예약_조회() {
         long reservationId = 1L;
+        Schedule mockSchedule = Schedule.builder().id(1L).dateTime(LocalDateTime.now()).totalSeats(100).availableSeats(50).concert(new Concert(1L, "해리포터 1", "마법사의돌")).build();
+        Seat mockSeat = Seat.builder()
+                .id(1L)
+                .seatNumber(1)
+                .price(100)
+                .status(SeatStatus.AVAILABLE)
+                .schedule(mockSchedule)
+                .build();
+
         Reservation mockReservation = Reservation.builder()
                 .id(reservationId)
                 .userId(1L)
                 .concertScheduleId(1L)
-                .seatId(1L)
+                .seat(mockSeat)
                 .status(ReservationStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())

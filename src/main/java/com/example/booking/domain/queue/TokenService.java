@@ -2,10 +2,11 @@ package com.example.booking.domain.queue;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import com.example.booking.infra.token.entity.TokenEntity;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,5 +38,9 @@ public class TokenService {
                 .filter(token -> token.isInactiveForDuration(Duration.ofMinutes(10)))
                 .map(Token::expire)
                 .forEach(tokenRepository::save);
+    }
+
+    public Optional<Token> findByToken(String token) {
+        return tokenRepository.findByToken(token);
     }
 }

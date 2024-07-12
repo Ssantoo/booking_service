@@ -40,8 +40,7 @@ public class UserRepositoryTest {
     void 유저를_비관적_잠금으로_조회한다() {
         Long userId = 1L;
 
-        UserEntity userEntity = userJpaRepository.findByIdWithLock(userId)
-                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다"));
+        UserEntity userEntity = userJpaRepository.findByIdWithLock(userId);
 
         User user = userEntity.toModel();
 
