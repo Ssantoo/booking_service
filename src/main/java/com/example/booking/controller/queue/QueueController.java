@@ -6,10 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "토큰")
 @RestController
@@ -33,5 +30,10 @@ public class QueueController {
         return ResponseEntity.ok(response);
     }
 
-
+    //자기 위치 로직 api로 확인
+    //캐치테이블 같은 곳 보니 매번 번호 체크가 되는거 보니 api호출이 필요할거라 판단
+    @GetMapping("/position/{userId}")
+    public ResponseEntity<Integer> getUserPositionInQueue(@PathVariable Long userId) {
+        return ResponseEntity.ok(tokenService.getUserPositionInQueue(userId));
+    }
 }

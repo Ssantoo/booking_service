@@ -33,4 +33,23 @@ public class TokenRepositoryImpl implements TokenRepository {
                 .map(TokenEntity::toModel)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public int countByStatus(TokenStatus status) {
+        return tokenJpaRepository.countByStatus(status);
+    }
+
+    @Override
+    public List<Token> findTopByStatusOrderByCreatedAt(TokenStatus status, int n) {
+        return tokenJpaRepository.findTopNByStatusOrderByCreatedAt(status, n).stream()
+                .map(TokenEntity::toModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Token> findAllByOrderByCreatedAt() {
+        return tokenJpaRepository.findAllByOrderByCreatedAt().stream()
+                .map(TokenEntity::toModel)
+                .collect(Collectors.toList());
+    }
 }

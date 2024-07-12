@@ -16,12 +16,17 @@ public class TokenExpiryScheduler {
     @Scheduled(fixedRate = 300000)
     public void scheduledExpireTokens() {
         expireTokens();
+        activateQueuedUsers();
     }
 
+    //비활성화 스케줄러
     public void expireTokens() {
         tokenService.expireTokens();
         tokenService.expireInactiveActiveTokens();
     }
 
-
+    //active 스케줄러
+    public void activateQueuedUsers() {
+        tokenService.activateQueuedUsers();
+    }
 }
