@@ -1,7 +1,7 @@
 package com.example.booking.domain.queue;
 
-import com.example.booking.common.exception.NotReservableException;
-import com.example.booking.common.exception.UserNotFoundException;
+import com.example.booking.support.exception.NotReservableException;
+import com.example.booking.support.exception.UserNotFoundException;
 import com.example.booking.infra.token.entity.TokenStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +19,7 @@ public class Token {
     private final String token;
     private final LocalDateTime expiredAt;
     private final TokenStatus status;
-    private final LocalDateTime lastActivityAt;
+//    private final LocalDateTime lastActivityAt;
     private final LocalDateTime createdAt;
 
     public static Token generate(Long userId) {
@@ -30,7 +30,7 @@ public class Token {
                 .token(tokenString)
                 .expiredAt(expiresAt)
                 .status(TokenStatus.WAITING)
-                .lastActivityAt(LocalDateTime.now())
+//                .lastActivityAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .build();
     }
@@ -46,7 +46,7 @@ public class Token {
                 .token(token)
                 .expiredAt(expiredAt)
                 .status(TokenStatus.EXPIRED)
-                .lastActivityAt(lastActivityAt)
+//                .lastActivityAt(lastActivityAt)
                 .createdAt(createdAt)
                 .build();
     }
@@ -57,8 +57,8 @@ public class Token {
                 .userId(userId)
                 .token(token)
                 .expiredAt(expiredAt)
-                .status(TokenStatus.ACTIVE)
-                .lastActivityAt(LocalDateTime.now())
+//                .status(TokenStatus.ACTIVE)
+//                .lastActivityAt(LocalDateTime.now())
                 .createdAt(createdAt)
                 .build();
     }
@@ -69,15 +69,15 @@ public class Token {
                 .userId(userId)
                 .token(token)
                 .expiredAt(expiredAt)
-                .status(status)
-                .lastActivityAt(LocalDateTime.now())
+//                .status(status)
+//                .lastActivityAt(LocalDateTime.now())
                 .createdAt(createdAt)
                 .build();
     }
 
-    public boolean isInactiveForDuration(Duration duration) {
-        return lastActivityAt.isBefore(LocalDateTime.now().minus(duration));
-    }
+//    public boolean isInactiveForDuration(Duration duration) {
+//        return lastActivityAt.isBefore(LocalDateTime.now().minus(duration));
+//    }
 
     public void validateActive() {
         if (this.status != TokenStatus.ACTIVE || this.isExpired()) {
