@@ -4,19 +4,12 @@ import com.example.booking.common.exception.AlreadyOccupiedException;
 import com.example.booking.controller.concert.dto.ReservationRequest;
 import com.example.booking.domain.queue.Token;
 import com.example.booking.domain.queue.TokenService;
-import com.example.booking.domain.user.User;
-import com.example.booking.domain.user.UserRepository;
-import com.example.booking.domain.user.UserService;
-import com.example.booking.infra.concert.entity.ReservationEntity;
 import com.example.booking.infra.concert.entity.ReservationStatus;
-import com.example.booking.infra.concert.entity.SeatEntity;
 import com.example.booking.infra.concert.entity.SeatStatus;
 import com.example.booking.infra.token.entity.TokenStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -118,7 +112,7 @@ public class ConcertServiceTest {
 
         given(seatRepository.findByScheduleId(scheduleId)).willReturn(mockSeatList);
 
-        List<Seat> result = concertService.getSeats(scheduleId);
+        List<Seat> result = concertService.getAvailableSeats(scheduleId);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -216,6 +210,36 @@ public class ConcertServiceTest {
 
         assertNotNull(result);
         assertEquals(reservationId, result.getId());
+    }
+
+    @Test
+    public void 선택한_가능한_좌석만_조회() {
+        long scheduleId = 1L;
+
+        Schedule mockSchedule = Schedule.builder()
+                .id(scheduleId)
+                .dateTime(LocalDateTime.of(2024, 7, 5, 0, 0))
+                .totalSeats(100)
+                .availableSeats(50)
+                .concert(new Concert(1L, "해리포터 1", "마법사의돌"))
+                .build();
+
+
+        List<Seat> mockSeatList = List.of(
+                Seat.builder().id(1L).seatNumber(1).price(100).status(SeatStatus.AVAILABLE).schedule(mockSchedule).build(),
+                Seat.builder().id(2L).seatNumber(2).price(100).status(SeatStatus.HOLD).schedule(mockSchedule).build(),
+                Seat.builder().id(3L).seatNumber(3).price(100).status(SeatStatus.RESERVED).schedule(mockSchedule).build()
+        );
+
+        given(seatRepository.findAvailableSeatsByScheduleId(1L, SeatStatus.AVAILABLE)).willReturn(
+                mockSeatList.stream().filter(seat -> seat.getStatus() == SeatStatus.AVAILABLE).collect(Collectors.toList())
+        );
+
+        List<Seat> availableSeats = concertService.getAvailableSeats(scheduleId);
+
+        assertNotNull(availableSeats);
+        assertEquals(1, availableSeats.size());
+        
     }
 
 }

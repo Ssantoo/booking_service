@@ -1,6 +1,8 @@
 package com.example.booking.infra.concert;
 
+import com.example.booking.domain.concert.Seat;
 import com.example.booking.infra.concert.entity.SeatEntity;
+import com.example.booking.infra.concert.entity.SeatStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -17,4 +19,5 @@ public interface SeatJpaRepository extends JpaRepository<SeatEntity, Long> {
     @Query("SELECT s FROM SeatEntity s WHERE s.id = :seatId")
     Optional<SeatEntity> findByIdForUpdate(@Param("seatId") Long seatId);
 
+    List<SeatEntity> findByScheduleIdAndAvailable(long scheduleId, SeatStatus seatStatus);
 }
