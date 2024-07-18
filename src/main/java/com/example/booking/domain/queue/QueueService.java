@@ -2,10 +2,13 @@ package com.example.booking.domain.queue;
 
 import com.example.booking.infra.token.entity.TokenStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+
+
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +37,7 @@ public class QueueService {
     public void activateQueuedUsers() {
         int activeTokenCount = queueRepository.countByStatus(TokenStatus.ACTIVE);
         if (Queue.hasAvailableSlot(activeTokenCount)) {
-            List<Token> targetTokens = queueRepository.findTopByStatusOrderByCreatedAt(TokenStatus.WAITING, Queue.countAvailableSlot(activeTokenCount));
+            List<Token> targetTokens = queueRepository.findLatestWatingTokenByCount(TokenStatus.WAITING, Queue.countAvailableSlot(activeTokenCount));
             List<Token> targetToken = targetTokens.stream().map(Token::activate).toList();
             queueRepository.saveAll(targetToken);
 
