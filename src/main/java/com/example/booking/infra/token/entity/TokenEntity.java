@@ -15,7 +15,12 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "token")
+//@Table(name = "token")
+@Table(name = "token", indexes = {
+        @Index(name = "idx_token_status", columnList = "status"),
+        @Index(name = "idx_token_created_at", columnList = "createdAt"),
+        @Index(name = "idx_token_status_created_at", columnList = "status, createdAt")
+})
 public class TokenEntity {
 
     @Id
@@ -35,8 +40,8 @@ public class TokenEntity {
     @Enumerated(EnumType.STRING)
     private TokenStatus status;
 
-    @Column(nullable = false)
-    private LocalDateTime lastActivityAt;
+//    @Column(nullable = false)
+//    private LocalDateTime lastActivityAt;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -48,7 +53,7 @@ public class TokenEntity {
                 .token(token)
                 .expiredAt(expiredAt)
                 .status(status)
-                .lastActivityAt(lastActivityAt)
+//                .lastActivityAt(lastActivityAt)
                 .createdAt(createdAt)
                 .build();
     }
@@ -60,7 +65,7 @@ public class TokenEntity {
                 .token(token.getToken())
                 .expiredAt(token.getExpiredAt())
                 .status(token.getStatus())
-                .lastActivityAt(token.getLastActivityAt())
+//                .lastActivityAt(token.getLastActivityAt())
                 .createdAt(token.getCreatedAt())
                 .build();
     }

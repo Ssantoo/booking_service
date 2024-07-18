@@ -5,7 +5,6 @@ import com.example.booking.common.exception.AlreadyOccupiedException;
 import com.example.booking.common.exception.NotReservableException;
 import com.example.booking.domain.queue.Token;
 import com.example.booking.domain.queue.TokenService;
-import com.example.booking.infra.concert.entity.ReservationStatus;
 
 import com.example.booking.infra.concert.entity.SeatStatus;
 import jakarta.transaction.Transactional;
@@ -13,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +35,10 @@ public class ConcertService {
     }
 
 
-    public List<Seat> getSeats(long scheduleId) {
-        return seatRepository.findByScheduleId(scheduleId);
+    public List<Seat> getAvailableSeats(long scheduleId) {
+//        List<Seat> allSeats = seatRepository.findByScheduleId(scheduleId);
+//        return allSeats.stream().filter(Seat::isAvailable).collect(Collectors.toList());
+        return seatRepository.findAvailableSeatsByScheduleId(scheduleId, SeatStatus.AVAILABLE);
     }
 
     @Transactional

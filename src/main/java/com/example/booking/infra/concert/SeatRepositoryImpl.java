@@ -4,6 +4,7 @@ import com.example.booking.common.exception.ResourceNotFoundException;
 import com.example.booking.domain.concert.Seat;
 import com.example.booking.domain.concert.SeatRepository;
 import com.example.booking.infra.concert.entity.SeatEntity;
+import com.example.booking.infra.concert.entity.SeatStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -35,5 +36,10 @@ public class SeatRepositoryImpl implements SeatRepository {
     @Override
     public Optional<Seat> findByIdForUpdate(Long seatId) {
         return seatJpaRepository.findByIdForUpdate(seatId).map(SeatEntity::toModel);
+    }
+
+    @Override
+    public List<Seat> findAvailableSeatsByScheduleId(long scheduleId, SeatStatus status) {
+        return seatJpaRepository.findByScheduleIdAndAvailable(scheduleId, status).stream().map(SeatEntity::toModel).collect(Collectors.toList());
     }
 }
