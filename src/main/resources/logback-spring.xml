@@ -1,0 +1,38 @@
+<configuration packagingData="true">
+    <!-- 기본 Spring Boot 로그 설정 파일을 주석 처리 -->
+    <!--<include resource="org/springframework/boot/logging/logback/base.xml" />-->
+    <contextName>${HOSTNAME}</contextName>
+
+    <!-- 다른 설정 파일을 포함 -->
+    <include resource="console-appender.xml" />
+    <include resource="file-appender.xml" />
+    <include resource="error-file-appender.xml" />
+    <include resource="warn-file-appender.xml" />
+    <include resource="json-appender.xml" />
+
+    <!-- 로컬 환경 설정 -->
+    <springProfile name="local">
+        <root level="INFO" additivity="false">
+            <appender-ref ref="file" />
+            <appender-ref ref="console" />
+            <appender-ref ref="error-file" />
+            <appender-ref ref="warn-file" />
+        </root>
+        <logger name="json" level="INFO" >
+            <appender-ref ref="json" />
+        </logger>
+    </springProfile>
+
+    <!-- 프로덕션 환경 설정 -->
+    <springProfile name="prod">
+        <root level="ERROR" additivity="false">
+            <appender-ref ref="file" />
+            <appender-ref ref="console" />
+            <appender-ref ref="error-file" />
+            <appender-ref ref="warn-file" />
+        </root>
+        <logger name="json" level="ERROR" >
+            <appender-ref ref="json" />
+        </logger>
+    </springProfile>
+</configuration>

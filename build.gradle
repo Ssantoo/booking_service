@@ -1,7 +1,17 @@
+buildscript {
+	ext {
+		restdocsApiSpecVersion = '0.18.2' // restdocsApiSpecVersion 버전 변수 설정
+	}
+}
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.1'
 	id 'io.spring.dependency-management' version '1.1.5'
+	// epages-restdocs 플러그인 추가
+	id 'com.epages.restdocs-api-spec' version "${restdocsApiSpecVersion}"
+	//swagger generator 플러그인 추가
+	id 'org.hidetake.swagger.generator' version '2.18.2'
 }
 
 group = 'com.example'
@@ -26,13 +36,64 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'io.rest-assured:rest-assured:5.3.1'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc:2.0.6.RELEASE'
+
+	// Spring REST Docs 의존성
+	testImplementation 'org.springframework.restdocs:spring-restdocs-restassured'
+	// epages REST Docs 의존성
+	testImplementation "com.epages:restdocs-api-spec-mockmvc:${restdocsApiSpecVersion}"
+	// Swagger 의존성
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-restassured'
+	testImplementation 'com.epages:restdocs-api-spec-restassured:0.18.2'
+	testImplementation 'com.epages:restdocs-api-spec-mockmvc:0.18.2'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+	implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.13'
+
+	implementation 'ch.qos.logback:logback-classic:1.4.12'
+
+	testImplementation 'uk.org.lidalia:slf4j-test:1.2.0'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+//tasks.withType(GenerateSwaggerUI) {
+//	options.compilerArgs
+//// openapi3 테스크 이후에 실행 됨
+//	dependsOn 'openapi3'
+//
+//	//기존 파일 삭제했다가, build 에 json 정적파일 복사 (안해도 됨 → local 확인용)
+//	delete file('src/main/resources/static/docs/')
+//	copy {
+//		from "build/resources/main/static/docs"
+//		into "src/main/resources/static/docs/"
+//	}
+//}
+//
+//// restdocs-api 옵션 설정 외에 설정은 공식문서 참고
+//openapi3 {
+//	server = "http://localhost:8080"
+//	title = "SAMPLE API 문서"
+//	description = "Spring REST Docs with SwaggerUI."
+//	version = "0.0.1"
+//	outputFileNamePrefix = 'SAMPLE - 0.0.1'
+//	format = 'json'
+//
+//	// /static/docs/SAMPLE - 0.0.1.json 생성 → jar 파일만 배포할 예정이기에 build 에 출력
+//	outputDirectory = 'build/resources/main/static/docs'
+//}
+//
+////openAPI 작성 자동화를 위해 패키징 전에 openapi3 테스크 선실행 설정
+//bootJar {
+//	dependsOn(':openapi3')
+//}
