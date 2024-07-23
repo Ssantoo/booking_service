@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.booking.controller.user.UserControllerTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2024-07-04T17:30:20" hostname="nowui-MacBookPro.local" time="0.529">
+  <properties/>
+  <testcase name="유저에게_토큰_발급()" classname="com.example.booking.controller.user.UserControllerTest" time="0.516"/>
+  <testcase name="유저_포인트_조회1()" classname="com.example.booking.controller.user.UserControllerTest" time="0.009"/>
+  <testcase name="유저_포인트_조회()" classname="com.example.booking.controller.user.UserControllerTest" time="0.002"/>
+  <system-out><![CDATA[Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+02:30:19.337 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.example.booking.controller.user.UserControllerTest]: UserControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+02:30:19.389 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.example.booking.BookingApplication for test class com.example.booking.controller.user.UserControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.1)
+
+2024-07-05T02:30:19.553+09:00  INFO 20537 --- [    Test worker] c.e.b.c.user.UserControllerTest          : Starting UserControllerTest using Java 17.0.10 with PID 20537 (started by now in /Users/now/project/personal/Java/tdd_study_03)
+2024-07-05T02:30:19.554+09:00  INFO 20537 --- [    Test worker] c.e.b.c.user.UserControllerTest          : No active profile set, falling back to 1 default profile: "default"
+2024-07-05T02:30:20.097+09:00  INFO 20537 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2024-07-05T02:30:20.097+09:00  INFO 20537 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2024-07-05T02:30:20.098+09:00  INFO 20537 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2024-07-05T02:30:20.113+09:00  INFO 20537 --- [    Test worker] c.e.b.c.user.UserControllerTest          : Started UserControllerTest in 0.694 seconds (process running for 1.186)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
