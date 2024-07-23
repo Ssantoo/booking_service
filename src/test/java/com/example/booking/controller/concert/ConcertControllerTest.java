@@ -1,6 +1,5 @@
 package com.example.booking.controller.concert;
 
-import com.example.booking.controller.concert.dto.ConcertResponse;
 import com.example.booking.controller.concert.dto.ScheduleResponse;
 import com.example.booking.controller.concert.dto.SeatResponse;
 import com.example.booking.domain.concert.Concert;
@@ -8,25 +7,27 @@ import com.example.booking.domain.concert.ConcertService;
 import com.example.booking.domain.concert.Schedule;
 import com.example.booking.domain.concert.Seat;
 import com.example.booking.infra.concert.entity.SeatStatus;
+import com.example.booking.support.exception.AlreadyOccupiedException;
+import com.example.booking.support.exception.CustomException;
+import com.example.booking.support.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ConcertController.class)
 @AutoConfigureMockMvc
@@ -91,7 +92,7 @@ public class ConcertControllerTest {
                 new Seat(2L, 2,1000, SeatStatus.AVAILABLE, schedule)
         );
 
-        given(concertService.getSeats(scheduleId)).willReturn(mockSeatList);
+        given(concertService.getAvailableSeats(scheduleId)).willReturn(mockSeatList);
 
         List<SeatResponse> expectedSeatList = SeatResponse.from(mockSeatList);
         String expectedJson = objectMapper.writeValueAsString(expectedSeatList);
@@ -103,5 +104,57 @@ public class ConcertControllerTest {
                     String actualJson = result.getResponse().getContentAsString();
                     assertEquals(expectedJson, actualJson);
                 });
+    }
+
+
+
+    @Test
+    public void 콘서트_목록_조회_리소스_예외() throws Exception {
+        given(concertService.getConcertList()).willThrow(new ResourceNotFoundException("콘서트를 찾을 수 없습니다"));
+
+        mockMvc.perform(get("/api/concert")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json("{\"status\":\"NOT_FOUND\",\"message\":\"콘서트를 찾을 수 없습니다\"}"));
+    }
+
+    @Test
+    public void 예약_가능_날짜_조회_예외() throws Exception {
+        long concertId = 1L;
+
+        given(concertService.getDates(concertId)).willThrow(new CustomException("잘못된 요청입니다.", HttpStatus.BAD_REQUEST));
+
+        mockMvc.perform(get("/api/concert/{concertId}/available-dates", concertId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json("{\"status\":\"BAD_REQUEST\",\"message\":\"잘못된 요청입니다.\"}"));
+    }
+
+    @Test
+    public void 예약_좌석_조회_예외() throws Exception {
+        long scheduleId = 1L;
+
+        given(concertService.getAvailableSeats(scheduleId)).willThrow(new RuntimeException("에러가 발생했습니다."));
+
+        mockMvc.perform(get("/api/concert/{scheduleId}/available-seats", scheduleId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json("{\"status\":\"INTERNAL_SERVER_ERROR\",\"message\":\"에러가 발생했습니다.\"}"));
+    }
+
+    @Test
+    public void 예약_좌석_조회_충돌_예외() throws Exception {
+        long scheduleId = 1L;
+
+        given(concertService.getAvailableSeats(scheduleId)).willThrow(new AlreadyOccupiedException("이미 예약된 좌석입니다."));
+
+        mockMvc.perform(get("/api/concert/{scheduleId}/available-seats", scheduleId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json("{\"status\":\"CONFLICT\",\"message\":\"이미 예약된 좌석입니다.\"}"));
     }
 }
