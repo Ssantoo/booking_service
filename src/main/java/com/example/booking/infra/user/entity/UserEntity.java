@@ -26,11 +26,15 @@ public class UserEntity {
     @Column(nullable = false)
     private int point;
 
+    @Version
+    private int version;
+
     public User toModel() {
         return User.builder()
                 .id(id)
                 .name(name)
                 .point(point)
+                .version(version)
                 .build();
     }
 
@@ -39,6 +43,7 @@ public class UserEntity {
                 .id(user.getId())
                 .name(user.getName())
                 .point(user.getPoint())
+                .version(user.getVersion())
                 .build();
     }
 }

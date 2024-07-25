@@ -4,6 +4,7 @@ import com.example.booking.domain.concert.Reservation;
 import com.example.booking.domain.concert.ReservationRepository;
 import com.example.booking.support.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
@@ -22,15 +23,30 @@ public class UserService {
     return userRepository.findById(userId);
 }
 
+//    @Transactional
+//    public User chargePoint(long userId, int amount) {
+//        System.out.println("포인트 충전 : " + userId);
+//
+//        User user = userRepository.findByIdWithLock(userId);
+//        user = user.charge(amount);
+//        System.out.println("충전: " + userId);
+//        return userRepository.charge(user);
+//    }
     @Transactional
     public User chargePoint(long userId, int amount) {
-        System.out.println("포인트 충전 : " + userId);
+        try {
 
-        User user = userRepository.findByIdWithLock(userId);
-        user = user.charge(amount);
-        System.out.println("충전: " + userId);
-        return userRepository.charge(user);
+            User user = userRepository.findByIdWithLock(userId);
+            user = user.charge(amount);
+            System.out.println("충전: " + userId);
+            return userRepository.save(user);
+        } catch (ObjectOptimisticLockingFailureException e) {
+            // 충돌 처리 로직 (예: 재시도 로직)
+            System.out.println("Optimistic Locking 충돌 발생: " + e.getMessage());
+            throw e;
+        }
     }
+
 
     @Transactional
     public User usePoint(long userId, Reservation reservation) {

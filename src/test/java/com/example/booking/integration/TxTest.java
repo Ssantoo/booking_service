@@ -6,6 +6,7 @@ import com.example.booking.domain.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SpringBootTest
 @SqlGroup({
@@ -22,6 +25,8 @@ import java.util.concurrent.Executors;
         @Sql(value = "/sql/delete-all-data.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 })
 public class TxTest {
+
+    private static final Logger log = LoggerFactory.getLogger(TxTest.class);
 
     @Autowired
     private UserService userService;
@@ -95,6 +100,38 @@ public class TxTest {
         executorService.shutdown();
     }
 
+    @Test
+    public void 낙관적락_포인트충전() throws InterruptedException {
+        int numThreads = 100;
+        long userId = 1L; 
+        int chargeAmount = 100;
+
+        CountDownLatch latch = new CountDownLatch(numThreads);
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+
+        long startTime = System.currentTimeMillis();
+
+        for (int i = 0; i < numThreads; i++) {
+            executorService.submit(() -> {
+                try {
+                    userService.chargePoint(userId, chargeAmount);
+                    log.info("[Thread ID: {}] 성공적으로 충전 완료", Thread.currentThread().getId());
+                } catch (ObjectOptimisticLockingFailureException e) {
+                    log.error("[Thread ID: {}] ObjectOptimisticLockingFailureException :: {}", Thread.currentThread().getId(), e.getMessage());
+                } catch (Exception ex) {
+                    log.error("[Thread ID: {}] Exception :: {}", Thread.currentThread().getId(), ex.getMessage());
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+        executorService.shutdown();
+
+        long endTime = System.currentTimeMillis();
+        log.info("소요 시간: {} ms", (endTime - startTime));
+    }
 
 
 }

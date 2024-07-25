@@ -11,7 +11,8 @@ import java.util.Optional;
 
 public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+//    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Lock(LockModeType.OPTIMISTIC)
     @Query("SELECT u FROM UserEntity u WHERE u.id = :userId")
     Optional<UserEntity> findByIdWithLock(@Param("userId") Long userId);
 }

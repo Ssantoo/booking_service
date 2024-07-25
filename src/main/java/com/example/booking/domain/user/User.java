@@ -9,17 +9,19 @@ public class User {
     private final Long id;
     private final String name;
     private final int point;
+    private final int version;
 
-    public User(Long id, String name, int point) {
+    public User(Long id, String name, int point, int version) {
         this.id = id;
         this.name = name;
         this.point = point;
+        this.version = version;
     }
 
     //포인트 충전
     public User charge(int amount) {
         checkNegative(amount);
-        return new User(id, name,point+amount);
+        return new User(id, name,point+amount, version);
     }
 
     //충전 포인트 음수 체크?
@@ -35,7 +37,7 @@ public class User {
             throw new IllegalArgumentException("포인트가 부족합니다.");
         }
         checkNegative(amount);
-        return new User(id, name, point-amount);
+        return new User(id, name, point-amount, version);
     }
 
 
