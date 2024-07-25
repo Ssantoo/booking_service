@@ -61,6 +61,8 @@ dependencies {
 	implementation 'ch.qos.logback:logback-classic:1.4.12'
 
 	testImplementation 'uk.org.lidalia:slf4j-test:1.2.0'
+
+	implementation 'org.redisson:redisson-spring-boot-starter:3.16.8'
 }
 
 tasks.named('test') {

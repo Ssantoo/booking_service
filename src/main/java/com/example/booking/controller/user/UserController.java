@@ -3,6 +3,7 @@ package com.example.booking.controller.user;
 
 import com.example.booking.controller.user.dto.ChargeRequest;
 import com.example.booking.controller.user.dto.PointResponse;
+import com.example.booking.controller.user.dto.UseRequest;
 import com.example.booking.domain.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,7 +41,13 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-
+    //사용
+    @Operation(summary = "사용")
+    @PostMapping("/use")
+    public ResponseEntity<PointResponse> usePoints(@RequestBody UseRequest useRequest) {
+        PointResponse response = PointResponse.from(userService.usePoint(useRequest.getUserId(), useRequest.getReservation()));
+        return ResponseEntity.ok(response);
+    }
 
 
 
