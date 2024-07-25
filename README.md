@@ -99,4 +99,80 @@
 </details>
 
 
+## Lock Study
 
+### Lock ###
+
+*정의*
+
+- 데이터베이스에서 동시성을 관리하고 데이터 무결성을 유지 하기 위해 사용
+
+
+*유형*
+- s-lock ( 공유락 )
+```
+    공유락은 여러 트랜잭션이 동시에 리소스를 읽을 수 있게 하되, 
+    그 리소스를 수정할 수 없도록 한다
+    즉, 읽게는 해주지만 쓰지는 마~
+```
+- x-lock ( 배타락 )
+```
+   배타락은 특정 리소스를 수정해야 할 때 사용
+   트랜잭션이 리소스를 독점적으로 접근할 수 있으며, 
+   다른 트랜잭션이 해당 리소스를 읽거나 쓸 수 없도록 한다
+   즉, 읽지도 쓰지도 아무것도 하지말고 기다려~
+```
+    
+그렇다면 우리가 사용할 LockModeType 에는
+
+            LockModeType
+
+    - Pessimistic_read (s-lock)
+    - Pessimistic_write (x-lock)
+
+*문제*
+
+예약시스템을 한다고 했을 때
+
+                tx 1 { PESSIMISTIC_READ        update }
+                tx 2  { PESSIMISTIC_READ        update }
+
+시도한다면 결과는?
+<details>
+    <summary></summary>
+
+둘다 실패
+
+```
+        tx 1 { PESSIMISTIC_READ        update }
+                                    (tx2 가 s-lock 소지중이야 너 기다려)
+        tx 2  { PESSIMISTIC_READ        update }
+                                         (tx1 이 s-lock 소지중이야 너 기다려)
+                                         = 데드락
+```
+
+</details>
+
+그렇다면 두개의 충전 과 1개의 조회가 있다면?
+
+```
+    tx 1 { PESSIMISTIC_WRITE        update }
+    tx 2  { PESSIMISTIC_WRITE        update }
+    tx 3   { READ }
+```
+시도한다면 결과는?
+<details>
+    <summary></summary>
+
+tx3은 
+tx1, tx2가 끝날때까지 기다리게 된다
+```
+tx 1 { PESSIMISTIC_WRITE        update }
+tx 2  {                                 PESSIMISTIC_WRITE        update }
+tx 3   {                                                                  READ }
+
+```
+
+![비관적락](docs/비관적락테스트(포인트충전).png)
+
+</details>

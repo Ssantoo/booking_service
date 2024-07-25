@@ -24,8 +24,11 @@ public class UserService {
 
     @Transactional
     public User chargePoint(long userId, int amount) {
+        System.out.println("포인트 충전 : " + userId);
+
         User user = userRepository.findByIdWithLock(userId);
         user = user.charge(amount);
+        System.out.println("충전: " + userId);
         return userRepository.charge(user);
     }
 
