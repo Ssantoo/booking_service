@@ -42,8 +42,8 @@ public class SeatEntity {
     @Column(name = "status")
     private SeatStatus status;
 
-    @OneToMany(mappedBy = "seat", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<TicketEntity> tickets;
+    @Version
+    private int version;
 
     public Seat toModel() {
         return Seat.builder()
@@ -51,6 +51,7 @@ public class SeatEntity {
                 .seatNumber(seatNuamber)
                 .price(price)
                 .status(status)
+                .version(version)
                 .build();
     }
 
@@ -60,6 +61,7 @@ public class SeatEntity {
                 .seatNuamber(seat.getSeatNumber())
                 .price(seat.getSeatNumber())
                 .status(seat.getStatus())
+                .version(seat.getVersion())
                 .build();
     }
 

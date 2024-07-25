@@ -53,159 +53,159 @@ public class ReservationTest {
     @Autowired
     private ReservationRepository reservationRepository;
 
-    @Test
-    public void 좌석예약_비관적락_테스트() throws InterruptedException {
-        int numThreads = 100;
-        int seatId = 6;
-        String token = "valid-token";
-        long scheduleId = 1L;
-
-        CountDownLatch latch = new CountDownLatch(numThreads);
-        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
-
-        long startTime = System.currentTimeMillis();
-
-        for (int i = 0; i < numThreads; i++) {
-            executorService.submit(() -> {
-                try {
-                    Schedule mockSchedule = Schedule.builder()
-                            .id(scheduleId)
-                            .dateTime(LocalDateTime.of(2024, 7, 5, 0, 0))
-                            .totalSeats(100)
-                            .availableSeats(50)
-                            .concert(new Concert(1L, "해리포터 1", "마법사의돌"))
-                            .build();
-                    Seat seat = new Seat(1L, seatId, 100, SeatStatus.AVAILABLE, mockSchedule);
-                    Reservation mockReservation = Reservation.builder()
-                            .id(1L)
-                            .userId(1L)
-                            .concertScheduleId(1L)
-                            .seat(seat)
-                            .status(ReservationStatus.PENDING)
-                            .createdAt(LocalDateTime.now())
-                            .updatedAt(LocalDateTime.now())
-                            .totalPrice(100)
-                            .build();
-
-                    // 예약 시도
-                    concertService.reserve(mockReservation, token);
-                    log.info("[Thread ID: {}] 예약 성공", Thread.currentThread().getId());
-                } catch (AlreadyOccupiedException e) {
-                    log.error("[Thread ID: {}] 이미 예약된 좌석", Thread.currentThread().getId());
-                } catch (Exception ex) {
-                    log.error("[Thread ID: {}] Exception :: {}", Thread.currentThread().getId(), ex.getMessage());
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-
-        latch.await();
-        executorService.shutdown();
-
-        long endTime = System.currentTimeMillis();
-        log.info("소요 시간: {} ms", (endTime - startTime));
-    }
-
-    @Test
-    public void 예약시도_2회_1조회_시도를_통한_조회로_인한_비관적락_단점_파악 () throws InterruptedException {
-        long seatId = 6;
-        String token = "valid-token";
-        long scheduleId = 1L;
-        long userId = 1L;
-
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
-        CountDownLatch latch = new CountDownLatch(3);
-
-        long startTime = System.currentTimeMillis();
-
-        // tx1: 좌석 예약 시도
-        executorService.execute(() -> {
-            try {
-                Schedule mockSchedule = Schedule.builder()
-                        .id(scheduleId)
-                        .dateTime(LocalDateTime.of(2024, 7, 5, 0, 0))
-                        .totalSeats(100)
-                        .availableSeats(50)
-                        .concert(new Concert(1L, "해리포터 1", "마법사의돌"))
-                        .build();
-                Seat seat = new Seat(1L, (int)seatId, 100, SeatStatus.AVAILABLE, mockSchedule);
-                Reservation mockReservation = Reservation.builder()
-                        .id(1L)
-                        .userId(userId)
-                        .concertScheduleId(scheduleId)
-                        .seat(seat)
-                        .status(ReservationStatus.PENDING)
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
-                        .totalPrice(100)
-                        .build();
-
-                concertService.reserve(mockReservation, token);
-                log.info("[Thread ID: {}] tx1 예약 성공", Thread.currentThread().getId());
-            } catch (Exception ex) {
-                log.error("[Thread ID: {}] tx1 Exception :: {}", Thread.currentThread().getId(), ex.getMessage());
-            } finally {
-                latch.countDown();
-            }
-        });
-
-        // tx2: 좌석 예약 시도
-        executorService.execute(() -> {
-            try {
-                Thread.sleep(50);
-                Schedule mockSchedule = Schedule.builder()
-                        .id(scheduleId)
-                        .dateTime(LocalDateTime.of(2024, 7, 5, 0, 0))
-                        .totalSeats(100)
-                        .availableSeats(50)
-                        .concert(new Concert(1L, "해리포터 1", "마법사의돌"))
-                        .build();
-                Seat seat = new Seat(1L, (int)seatId, 100, SeatStatus.AVAILABLE, mockSchedule);
-                Reservation mockReservation = Reservation.builder()
-                        .id(2L)
-                        .userId(userId)
-                        .concertScheduleId(scheduleId)
-                        .seat(seat)
-                        .status(ReservationStatus.PENDING)
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
-                        .totalPrice(100)
-                        .build();
-
-                concertService.reserve(mockReservation, token);
-                log.info("[Thread ID: {}] tx2 예약 성공", Thread.currentThread().getId());
-            } catch (Exception ex) {
-                log.error("[Thread ID: {}] tx2 Exception :: {}", Thread.currentThread().getId(), ex.getMessage());
-            } finally {
-                latch.countDown();
-            }
-        });
-
-        // tx3: 예약 상태 조회 시도
-        executorService.execute(() -> {
-            try {
-                Thread.sleep(300);
-                long tx3StartTime = System.currentTimeMillis();
-                log.info("시작 tx3 조회 : " + tx3StartTime);
-
-                Reservation reservation = reservationRepository.findById(seatId);
-
-                long tx3EndTime = System.currentTimeMillis();
-                log.info("tx3 조회 걸린시간 " + (tx3EndTime - tx3StartTime) + " milliseconds.");
-            } catch (Exception ex) {
-                log.error("[Thread ID: {}] tx3 Exception :: {}", Thread.currentThread().getId(), ex.getMessage());
-            } finally {
-                latch.countDown();
-            }
-        });
-
-        latch.await();
-        executorService.shutdown();
-
-        long endTime = System.currentTimeMillis();
-        log.info("전체 소요 시간: {} ms", (endTime - startTime));
-    }
+//    @Test
+//    public void 좌석예약_비관적락_테스트() throws InterruptedException {
+//        int numThreads = 100;
+//        int seatId = 6;
+//        String token = "valid-token";
+//        long scheduleId = 1L;
+//
+//        CountDownLatch latch = new CountDownLatch(numThreads);
+//        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+//
+//        long startTime = System.currentTimeMillis();
+//
+//        for (int i = 0; i < numThreads; i++) {
+//            executorService.submit(() -> {
+//                try {
+//                    Schedule mockSchedule = Schedule.builder()
+//                            .id(scheduleId)
+//                            .dateTime(LocalDateTime.of(2024, 7, 5, 0, 0))
+//                            .totalSeats(100)
+//                            .availableSeats(50)
+//                            .concert(new Concert(1L, "해리포터 1", "마법사의돌"))
+//                            .build();
+//                    Seat seat = new Seat(1L, seatId, 100, SeatStatus.AVAILABLE, mockSchedule);
+//                    Reservation mockReservation = Reservation.builder()
+//                            .id(1L)
+//                            .userId(1L)
+//                            .concertScheduleId(1L)
+//                            .seat(seat)
+//                            .status(ReservationStatus.PENDING)
+//                            .createdAt(LocalDateTime.now())
+//                            .updatedAt(LocalDateTime.now())
+//                            .totalPrice(100)
+//                            .build();
+//
+//                    // 예약 시도
+//                    concertService.reserve(mockReservation, token);
+//                    log.info("[Thread ID: {}] 예약 성공", Thread.currentThread().getId());
+//                } catch (AlreadyOccupiedException e) {
+//                    log.error("[Thread ID: {}] 이미 예약된 좌석", Thread.currentThread().getId());
+//                } catch (Exception ex) {
+//                    log.error("[Thread ID: {}] Exception :: {}", Thread.currentThread().getId(), ex.getMessage());
+//                } finally {
+//                    latch.countDown();
+//                }
+//            });
+//        }
+//
+//        latch.await();
+//        executorService.shutdown();
+//
+//        long endTime = System.currentTimeMillis();
+//        log.info("소요 시간: {} ms", (endTime - startTime));
+//    }
+//
+//    @Test
+//    public void 예약시도_2회_1조회_시도를_통한_조회로_인한_비관적락_단점_파악 () throws InterruptedException {
+//        long seatId = 6;
+//        String token = "valid-token";
+//        long scheduleId = 1L;
+//        long userId = 1L;
+//
+//        ExecutorService executorService = Executors.newFixedThreadPool(3);
+//        CountDownLatch latch = new CountDownLatch(3);
+//
+//        long startTime = System.currentTimeMillis();
+//
+//        // tx1: 좌석 예약 시도
+//        executorService.execute(() -> {
+//            try {
+//                Schedule mockSchedule = Schedule.builder()
+//                        .id(scheduleId)
+//                        .dateTime(LocalDateTime.of(2024, 7, 5, 0, 0))
+//                        .totalSeats(100)
+//                        .availableSeats(50)
+//                        .concert(new Concert(1L, "해리포터 1", "마법사의돌"))
+//                        .build();
+//                Seat seat = new Seat(1L, (int)seatId, 100, SeatStatus.AVAILABLE, mockSchedule);
+//                Reservation mockReservation = Reservation.builder()
+//                        .id(1L)
+//                        .userId(userId)
+//                        .concertScheduleId(scheduleId)
+//                        .seat(seat)
+//                        .status(ReservationStatus.PENDING)
+//                        .createdAt(LocalDateTime.now())
+//                        .updatedAt(LocalDateTime.now())
+//                        .totalPrice(100)
+//                        .build();
+//
+//                concertService.reserve(mockReservation, token);
+//                log.info("[Thread ID: {}] tx1 예약 성공", Thread.currentThread().getId());
+//            } catch (Exception ex) {
+//                log.error("[Thread ID: {}] tx1 Exception :: {}", Thread.currentThread().getId(), ex.getMessage());
+//            } finally {
+//                latch.countDown();
+//            }
+//        });
+//
+//        // tx2: 좌석 예약 시도
+//        executorService.execute(() -> {
+//            try {
+//                Thread.sleep(50);
+//                Schedule mockSchedule = Schedule.builder()
+//                        .id(scheduleId)
+//                        .dateTime(LocalDateTime.of(2024, 7, 5, 0, 0))
+//                        .totalSeats(100)
+//                        .availableSeats(50)
+//                        .concert(new Concert(1L, "해리포터 1", "마법사의돌"))
+//                        .build();
+//                Seat seat = new Seat(1L, (int)seatId, 100, SeatStatus.AVAILABLE, mockSchedule);
+//                Reservation mockReservation = Reservation.builder()
+//                        .id(2L)
+//                        .userId(userId)
+//                        .concertScheduleId(scheduleId)
+//                        .seat(seat)
+//                        .status(ReservationStatus.PENDING)
+//                        .createdAt(LocalDateTime.now())
+//                        .updatedAt(LocalDateTime.now())
+//                        .totalPrice(100)
+//                        .build();
+//
+//                concertService.reserve(mockReservation, token);
+//                log.info("[Thread ID: {}] tx2 예약 성공", Thread.currentThread().getId());
+//            } catch (Exception ex) {
+//                log.error("[Thread ID: {}] tx2 Exception :: {}", Thread.currentThread().getId(), ex.getMessage());
+//            } finally {
+//                latch.countDown();
+//            }
+//        });
+//
+//        // tx3: 예약 상태 조회 시도
+//        executorService.execute(() -> {
+//            try {
+//                Thread.sleep(300);
+//                long tx3StartTime = System.currentTimeMillis();
+//                log.info("시작 tx3 조회 : " + tx3StartTime);
+//
+//                Reservation reservation = reservationRepository.findById(seatId);
+//
+//                long tx3EndTime = System.currentTimeMillis();
+//                log.info("tx3 조회 걸린시간 " + (tx3EndTime - tx3StartTime) + " milliseconds.");
+//            } catch (Exception ex) {
+//                log.error("[Thread ID: {}] tx3 Exception :: {}", Thread.currentThread().getId(), ex.getMessage());
+//            } finally {
+//                latch.countDown();
+//            }
+//        });
+//
+//        latch.await();
+//        executorService.shutdown();
+//
+//        long endTime = System.currentTimeMillis();
+//        log.info("전체 소요 시간: {} ms", (endTime - startTime));
+//    }
 
     @Test
     public void 예약시도_낙관적락_테스트() throws InterruptedException {
@@ -213,6 +213,7 @@ public class ReservationTest {
         String token = "valid-token";
         long scheduleId = 1L;
         long userId = 1L;
+        int initialVersion = 0;
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         CountDownLatch latch = new CountDownLatch(2);
@@ -229,7 +230,7 @@ public class ReservationTest {
                         .availableSeats(50)
                         .concert(new Concert(1L, "해리포터 1", "마법사의돌"))
                         .build();
-                Seat seat = new Seat(1L, (int)seatId, 100, SeatStatus.AVAILABLE, mockSchedule);
+                Seat seat = new Seat(1L, (int)seatId, 100, SeatStatus.AVAILABLE, mockSchedule, initialVersion);
                 Reservation mockReservation = Reservation.builder()
                         .id(1L)
                         .userId(userId)
@@ -253,7 +254,7 @@ public class ReservationTest {
         // tx2: 좌석 예약 시도
         executorService.execute(() -> {
             try {
-                Thread.sleep(50); // tx1이 먼저 실행되도록 약간의 지연 추가
+//                Thread.sleep(50); // tx1이 먼저 실행되도록 약간의 지연 추가
                 Schedule mockSchedule = Schedule.builder()
                         .id(scheduleId)
                         .dateTime(LocalDateTime.of(2024, 7, 5, 0, 0))
@@ -261,7 +262,7 @@ public class ReservationTest {
                         .availableSeats(50)
                         .concert(new Concert(1L, "해리포터 1", "마법사의돌"))
                         .build();
-                Seat seat = new Seat(1L, (int)seatId, 100, SeatStatus.AVAILABLE, mockSchedule);
+                Seat seat = new Seat(1L, (int)seatId, 100, SeatStatus.AVAILABLE, mockSchedule, initialVersion);
                 Reservation mockReservation = Reservation.builder()
                         .id(2L)
                         .userId(userId)
@@ -290,6 +291,62 @@ public class ReservationTest {
         long endTime = System.currentTimeMillis();
         log.info("전체 소요 시간: {} ms", (endTime - startTime));
     }
+
+    @Test
+    public void 낙관적락_충돌_테스트() throws InterruptedException {
+        int numThreads = 10; // 높은 충돌 빈도를 위해 여러 스레드를 사용
+        long seatId = 6;
+        String token = "valid-token";
+        long scheduleId = 1L;
+        long userId = 1L;
+        int initialVersion = 0;
+
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        CountDownLatch latch = new CountDownLatch(numThreads);
+
+        long startTime = System.currentTimeMillis();
+
+        for (int i = 0; i < numThreads; i++) {
+            executorService.submit(() -> {
+                try {
+                    Schedule mockSchedule = Schedule.builder()
+                            .id(scheduleId)
+                            .dateTime(LocalDateTime.of(2024, 7, 5, 0, 0))
+                            .totalSeats(100)
+                            .availableSeats(50)
+                            .concert(new Concert(1L, "해리포터 1", "마법사의돌"))
+                            .build();
+                    Seat seat = new Seat(1L, (int)seatId, 100, SeatStatus.AVAILABLE, mockSchedule, initialVersion);
+                    Reservation mockReservation = Reservation.builder()
+                            .id(1L)
+                            .userId(userId)
+                            .concertScheduleId(scheduleId)
+                            .seat(seat)
+                            .status(ReservationStatus.PENDING)
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .totalPrice(100)
+                            .build();
+
+                    concertService.reserve(mockReservation, token);
+                    log.info("[Thread ID: {}] 예약 성공", Thread.currentThread().getId());
+                } catch (ObjectOptimisticLockingFailureException e) {
+                    log.error("[Thread ID: {}] OptimisticLockException :: {}", Thread.currentThread().getId(), e.getMessage());
+                } catch (Exception ex) {
+                    log.error("[Thread ID: {}] Exception :: {}", Thread.currentThread().getId(), ex.getMessage());
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+        executorService.shutdown();
+
+        long endTime = System.currentTimeMillis();
+        log.info("전체 소요 시간: {} ms", (endTime - startTime));
+    }
+
 
 
 }

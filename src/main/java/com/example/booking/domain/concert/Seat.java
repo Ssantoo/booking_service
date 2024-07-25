@@ -13,14 +13,17 @@ public class Seat {
     private int price;
     private SeatStatus status;
     private Schedule schedule;
+    private int version;
 
-    public Seat(Long id, int seatNumber, int price, SeatStatus status, Schedule schedule){
+    public Seat(Long id, int seatNumber, int price, SeatStatus status, Schedule schedule, int version){
         this.id = id;
         this.seatNumber = seatNumber;
         this.price = price;
         this.status = status;
         this.schedule = schedule;
+        this.version = version;
     }
+
 
     public void hold() {
         if (this.status != SeatStatus.AVAILABLE) {
@@ -49,5 +52,7 @@ public class Seat {
         }
         this.status = SeatStatus.AVAILABLE;
     }
+
+
 
 }
