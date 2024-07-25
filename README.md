@@ -178,18 +178,55 @@ tx 3   {                                                                  READ }
 </details>
 
 > 프로젝트에서 사용할만 로직
-> > 포인트 충전
+> > <a href="#locking-details-charge"> 포인트 충전 </a>
 > 
-> > 포인트 사용
+> > <a href="#locking-details-use"> 포인트 사용 </a>
 > 
-> > 좌석 예약
+> >  <a href="#locking-details"> 좌석 예약 </a>
 
-<details>
-    <summary>포인트 충전</summary>
+<details id="locking-details-charge">
+    <summary>포인트 충전 및 사용</summary>
 
 ![낙관적락](docs/낙관적락(포인트충전).png)
 
 ![비관적락](docs/비관적락테스트(포인트충전).png)
+
+
+> 낙관적 락은 데이터 충돌이 드물고, 트랜잭션이 자주 충돌하지 않는 상황에서 효율적이다
+그러나 포인트 충전과 같은 동시성 문제가 발생하기 쉬운 작업에서는 낙관적 락이 자주 충돌을 일으켜 ObjectOptimisticLockingFailureException이 발생
+하므로 *비추*
+
+> 비관적 락은 충돌을 예방하기 위해 트랜잭션이 자원에 접근할 때 락을 걸어 다른 트랜잭션이 접근하지 못하게 한다.
+데이터의 일관성을 보장하지만, 트랜잭션 간의 대기 시간이 발생하고, 특히 고성능이 요구되는 환경에서는 성능 병목 및
+비관적 락의 DB 커넥션 점유 문제가 발생하므로 *비추*
+
+</details>
+
+<details id="#locking-details-use">
+    <summary>포인트 충전 및 사용</summary>
+
+![낙관적락](docs/낙관적락(포인트충전).png)
+
+![비관적락](docs/비관적포인트사용.png)
+
+
+> 낙관적 락은 데이터 충돌이 드물고, 트랜잭션이 자주 충돌하지 않는 상황에서 효율적이다
+그러나 포인트 충전과 같은 동시성 문제가 발생하기 쉬운 작업에서는 낙관적 락이 자주 충돌을 일으켜 ObjectOptimisticLockingFailureException이 발생
+하므로 *비추*
+
+> 비관적 락은 충돌을 예방하기 위해 트랜잭션이 자원에 접근할 때 락을 걸어 다른 트랜잭션이 접근하지 못하게 한다.
+데이터의 일관성을 보장하지만, 트랜잭션 간의 대기 시간이 발생하고, 특히 고성능이 요구되는 환경에서는 성능 병목 및
+비관적 락의 DB 커넥션 점유 문제가 발생하므로 *비추*
+
+</details>
+
+
+<details id="locking-details">
+    <summary>좌석 예약</summary>
+
+![비관적락](docs/좌석예약lock상태확인.png)
+
+![비관적락](docs/좌석예약비관적락테스트.png)
 
 
 > 낙관적 락은 데이터 충돌이 드물고, 트랜잭션이 자주 충돌하지 않는 상황에서 효율적이다
