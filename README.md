@@ -223,10 +223,17 @@ tx 3   {                                                                  READ }
 
 <details id="locking-details">
     <summary>좌석 예약</summary>
+비관적락
 
 ![비관적락](docs/좌석예약lock상태확인.png)
 
 ![비관적락](docs/좌석예약비관적락테스트.png)
+
+낙관적락
+
+![낙관적락](docs/좌석예약낙관적.png)
+
+![낙관적락](docs/낙관적락예약의단점.png)
 
 
 > 낙관적 락은 데이터 충돌이 드물고, 트랜잭션이 자주 충돌하지 않는 상황에서 효율적이다
