@@ -16,7 +16,7 @@ public class PaymentTest {
 
     @Test
     public void 결제_도메인_테스트() {
-        User mockUser = new User(1L, "testUser", 1000);
+        User mockUser = new User(1L, "testUser", 1000, 0);
 
         Schedule mockSchedule = Schedule.builder().id(1L).dateTime(LocalDateTime.now()).totalSeats(100).availableSeats(50).concert(new Concert(1L, "해리포터 1", "마법사의돌")).build();
         Seat mockSeat = Seat.builder()

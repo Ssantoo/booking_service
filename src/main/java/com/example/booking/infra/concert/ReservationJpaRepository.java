@@ -12,7 +12,10 @@ import java.util.Optional;
 public interface ReservationJpaRepository extends JpaRepository<ReservationEntity, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT r FROM ReservationEntity r WHERE r.concertScheduleId = :concertScheduleId AND r.seatId = :seatId")
+    @Query("SELECT r FROM ReservationEntity r WHERE r.concertScheduleId = :concertScheduleId AND r.seat.id = :seatId")
     Optional<ReservationEntity> findByConcertScheduleIdAndSeatIdForUpdate(@Param("concertScheduleId") Long concertScheduleId, @Param("seatId") Long seatId);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r from ReservationEntity r where r.id = :id")
+    Optional<ReservationEntity> findByIdWithLock(Long id);
 }

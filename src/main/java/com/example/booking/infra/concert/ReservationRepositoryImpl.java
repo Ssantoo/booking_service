@@ -1,11 +1,11 @@
 package com.example.booking.infra.concert;
 
-import com.example.booking.common.exception.AlreadyOccupiedException;
-import com.example.booking.common.exception.ResourceNotFoundException;
+
 import com.example.booking.domain.concert.Reservation;
 import com.example.booking.domain.concert.ReservationRepository;
 import com.example.booking.infra.concert.entity.ReservationEntity;
 import com.example.booking.infra.concert.entity.ReservationStatus;
+import com.example.booking.support.exception.ResourceNotFoundException;
 import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.Lock;
@@ -37,5 +37,12 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public Reservation findById(Long reservationId) {
         return reservationJpaRepository.findById(reservationId).orElseThrow(() -> new ResourceNotFoundException("예약건이 없습니다.", reservationId)).toModel();
+    }
+
+    @Override
+    public Reservation findByIdWithLock(Reservation reservation) {
+        return reservationJpaRepository.findByIdWithLock(reservation.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("유저가 존재하지 않습니다", reservation.getId()))
+                .toModel();
     }
 }

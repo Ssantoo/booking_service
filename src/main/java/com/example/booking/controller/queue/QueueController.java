@@ -1,7 +1,7 @@
 package com.example.booking.controller.queue;
 
 import com.example.booking.controller.queue.dto.TokenResponse;
-import com.example.booking.domain.queue.TokenService;
+import com.example.booking.domain.queue.QueueService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/queue")
 public class QueueController {
 
-    private final TokenService tokenService;
+    private final QueueService tokenService;
 
     /** 토큰
      * **유저 대기열 토큰 기능

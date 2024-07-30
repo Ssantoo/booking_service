@@ -1,6 +1,5 @@
 package com.example.booking.infra.concert;
 
-import com.example.booking.common.exception.ResourceNotFoundException;
 import com.example.booking.domain.concert.Seat;
 import com.example.booking.domain.concert.SeatRepository;
 import com.example.booking.infra.concert.entity.SeatEntity;
@@ -40,6 +39,6 @@ public class SeatRepositoryImpl implements SeatRepository {
 
     @Override
     public List<Seat> findAvailableSeatsByScheduleId(long scheduleId, SeatStatus status) {
-        return seatJpaRepository.findByScheduleIdAndAvailable(scheduleId, status).stream().map(SeatEntity::toModel).collect(Collectors.toList());
+        return seatJpaRepository.findByScheduleIdAndStatus(scheduleId, status).stream().map(SeatEntity::toModel).collect(Collectors.toList());
     }
 }

@@ -68,4 +68,14 @@ public class QueueRepositoryImpl implements QueueRepository {
                 .map(TokenEntity::from)
                 .collect(Collectors.toList()));
     }
+
+    @Override
+    public Optional<Token> findByToken(String token) {
+        return Optional.empty();
+    }
+
+    @Override
+    public List<Token> findLatestWatingTokenByCount(TokenStatus tokenStatus, int i) {
+        return null;
+    }
 }

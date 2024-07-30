@@ -50,12 +50,12 @@ public class ConcertController {
     }
 
     //좌석 조회
-    @Operation(summary = "콘서트 좌석 조회")
-    @GetMapping("/{scheduleId}/available-seats")
-    public ResponseEntity<List<SeatResponse>> getAvailableSeats(@PathVariable long scheduleId) {
-        List<SeatResponse> seats = SeatResponse.from(concertService.getSeats(scheduleId));
-        return ResponseEntity.ok(seats);
-    }
+//    @Operation(summary = "콘서트 좌석 조회")
+//    @GetMapping("/{scheduleId}/available-seats")
+//    public ResponseEntity<List<SeatResponse>> getAvailableSeats(@PathVariable long scheduleId) {
+//        List<SeatResponse> seats = SeatResponse.from(concertService.getSeats(scheduleId));
+//        return ResponseEntity.ok(seats);
+//    }
 
 
     /**좌석 예약 요청

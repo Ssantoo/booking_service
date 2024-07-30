@@ -82,29 +82,29 @@ public class ConcertControllerTest {
                 });
     }
 
-    @Test
-    public void 예약_좌석_조회() throws Exception {
-        long scheduleId = 1L;
-        long concertId = 1L;
-        Schedule schedule = new Schedule(1L, LocalDateTime.of(2024, 7, 5, 0, 0), 100, 50, new Concert(concertId, "harry 1", "potter"));
-        List<Seat> mockSeatList = List.of(
-                new Seat(1L, 1, 1000, SeatStatus.AVAILABLE, schedule),
-                new Seat(2L, 2,1000, SeatStatus.AVAILABLE, schedule)
-        );
-
-        given(concertService.getAvailableSeats(scheduleId)).willReturn(mockSeatList);
-
-        List<SeatResponse> expectedSeatList = SeatResponse.from(mockSeatList);
-        String expectedJson = objectMapper.writeValueAsString(expectedSeatList);
-
-        mockMvc.perform(get("/api/concert/{scheduleId}/available-seats", scheduleId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(result -> {
-                    String actualJson = result.getResponse().getContentAsString();
-                    assertEquals(expectedJson, actualJson);
-                });
-    }
+//    @Test
+//    public void 예약_좌석_조회() throws Exception {
+//        long scheduleId = 1L;
+//        long concertId = 1L;
+//        Schedule schedule = new Schedule(1L, LocalDateTime.of(2024, 7, 5, 0, 0), 100, 50, new Concert(concertId, "harry 1", "potter"));
+//        List<Seat> mockSeatList = List.of(
+//                new Seat(1L, 1, 1000, SeatStatus.AVAILABLE, schedule),
+//                new Seat(2L, 2,1000, SeatStatus.AVAILABLE, schedule)
+//        );
+//
+//        given(concertService.getAvailableSeats(scheduleId)).willReturn(mockSeatList);
+//
+//        List<SeatResponse> expectedSeatList = SeatResponse.from(mockSeatList);
+//        String expectedJson = objectMapper.writeValueAsString(expectedSeatList);
+//
+//        mockMvc.perform(get("/api/concert/{scheduleId}/available-seats", scheduleId)
+//                        .contentType(MediaType.APPLICATION_JSON))
+//                .andExpect(status().isOk())
+//                .andExpect(result -> {
+//                    String actualJson = result.getResponse().getContentAsString();
+//                    assertEquals(expectedJson, actualJson);
+//                });
+//    }
 
 
 

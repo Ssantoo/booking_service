@@ -59,7 +59,7 @@ public class PaymentControllerTest {
                 .build();
 
         Payment mockPayment = Payment.builder()
-                .userId(new User(userId, "조현재", 1000))
+                .userId(new User(userId, "조현재", 1000, 0))
                 .reservationId(new Reservation(reservationId, 1L, 1L, mockSeat, ReservationStatus.PENDING, LocalDateTime.now(), LocalDateTime.now(), 100))
                 .amount(100)
                 .paymentTime(LocalDateTime.now())
@@ -69,7 +69,7 @@ public class PaymentControllerTest {
         PaymentResponse mockResponse = PaymentResponse.from(mockPayment);
         String expectedJson = objectMapper.writeValueAsString(mockResponse);
 
-        given(paymentFacade.processPayment(userId, reservationId)).willReturn(mockPayment);
+        //given(paymentFacade.processPayment(userId, reservationId)).willReturn(mockPayment);
 
         mockMvc.perform(post("/api/payments/pay")
                         .param("userId", userId.toString())

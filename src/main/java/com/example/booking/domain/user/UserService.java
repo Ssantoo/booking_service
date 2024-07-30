@@ -1,7 +1,9 @@
 package com.example.booking.domain.user;
 
+import com.example.booking.domain.concert.Concert;
 import com.example.booking.domain.concert.Reservation;
 import com.example.booking.domain.concert.ReservationRepository;
+import com.example.booking.domain.concert.Seat;
 import com.example.booking.support.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -51,9 +53,17 @@ public class UserService {
     @Transactional
     public User usePoint(long userId, Reservation reservation) {
         Reservation getReservation = reservationRepository.findById(reservation.getId());
+
+        // 트랜잭션 내에서 지연 로딩된 데이터를 미리 초기화
+        Seat seat = getReservation.getSeat();
+        seat.getSeatNumber();  // 지연 로딩된 필드에 접근하여 초기화
+
+        // 필요한 데이터를 가져와서 처리
+        int totalPrice = getReservation.getTotalPrice();
         User user = userRepository.findByIdWithLock(userId);
-        User updatedUser = user.use(getReservation.getTotalPrice());
-        return userRepository.save(updatedUser);
+        user.use(totalPrice);
+
+        return userRepository.save(user);
     }
 
 

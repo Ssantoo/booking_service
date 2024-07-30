@@ -103,7 +103,7 @@ public class TxTest {
     @Test
     public void 낙관적락_포인트충전() throws InterruptedException {
         int numThreads = 100;
-        long userId = 1L; 
+        long userId = 1L;
         int chargeAmount = 100;
 
         CountDownLatch latch = new CountDownLatch(numThreads);

@@ -8,4 +8,6 @@ public interface ReservationRepository {
     Reservation save(Reservation reservation);
 
     Reservation findById(Long reservationId);
+
+    Reservation findByIdWithLock(Reservation reservation);
 }

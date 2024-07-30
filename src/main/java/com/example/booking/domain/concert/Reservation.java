@@ -3,6 +3,7 @@ package com.example.booking.domain.concert;
 import com.example.booking.infra.concert.entity.ReservationStatus;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 @Getter

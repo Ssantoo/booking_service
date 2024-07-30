@@ -59,7 +59,7 @@ public class UserControllerTest {
     @Test
     public void 유저_포인트_조회() throws Exception {
         long userId = 1L;
-        User mockUser = new User(userId, "조현재", 1000);
+        User mockUser = new User(userId, "조현재", 1000, 0);
 
         given(userService.getUserPoint(userId)).willReturn(mockUser);
 
