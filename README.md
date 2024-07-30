@@ -99,9 +99,7 @@
 </details>
 
 
-## Lock Study
-
-### Lock ###
+## Lock
 
 *정의*
 
