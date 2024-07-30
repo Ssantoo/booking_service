@@ -46,6 +46,8 @@ public class ReservationEntity {
     @Column(nullable = false)
     private int totalPrice;
 
+
+
     public Reservation toModel() {
         return Reservation.builder()
                 .id(id)

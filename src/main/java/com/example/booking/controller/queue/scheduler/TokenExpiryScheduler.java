@@ -1,6 +1,6 @@
 package com.example.booking.controller.queue.scheduler;
 
-import com.example.booking.domain.queue.TokenService;
+import com.example.booking.domain.queue.QueueService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class TokenExpiryScheduler {
 
-    private final TokenService tokenService;
+    private final QueueService tokenService;
 
     @Scheduled(fixedRate = 300000)
     public void scheduledExpireTokens() {
@@ -22,7 +22,7 @@ public class TokenExpiryScheduler {
     //비활성화 스케줄러
     public void expireTokens() {
         tokenService.expireTokens();
-        tokenService.expireInactiveActiveTokens();
+        //tokenService.expireInactiveActiveTokens();
     }
 
     //active 스케줄러

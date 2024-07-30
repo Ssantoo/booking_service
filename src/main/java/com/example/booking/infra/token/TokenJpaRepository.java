@@ -16,8 +16,11 @@ public interface TokenJpaRepository extends JpaRepository<TokenEntity, Long> {
 
     int countByStatus(TokenStatus status);
 
-    @Query("SELECT t FROM TokenEntity t WHERE t.status = :status ORDER BY t.createdAt ASC")
+//    @Query("SELECT t FROM TokenEntity t WHERE t.status = :status ORDER BY t.createdAt ASC")
+//    List<TokenEntity> findTopNByStatusOrderByCreatedAt(@Param("status") TokenStatus status, @Param("n") int n);
+    @Query(value = "SELECT * FROM token_entity t WHERE t.status = :status ORDER BY t.created_at ASC LIMIT :n", nativeQuery = true)
     List<TokenEntity> findTopNByStatusOrderByCreatedAt(@Param("status") TokenStatus status, @Param("n") int n);
+
 
     Optional<TokenEntity> findAllByOrderByCreatedAt();
 }

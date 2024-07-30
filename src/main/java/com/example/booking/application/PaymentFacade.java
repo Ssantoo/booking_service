@@ -17,12 +17,11 @@ public class PaymentFacade {
     private final UserService userService;
     private final ConcertService concertService;
 
-    public Payment processPayment(Long userId, Long reservationId) {
-        final User user = userService.getUserByIdWithLock(userId);
-        final Reservation reservation = concertService.getReservationById(reservationId);
-        final Payment payment = paymentService.pay(user, reservation);
-        return payment;
-
-    }
+//    public Payment processPayment(Long userId, Long reservationId) {
+//        final User user = userService.getUserById(userId);
+//        final Reservation reservation = concertService.getReservationById(reservationId);
+//        final Payment payment = paymentService.pay(user, reservation);
+//        return payment;
+//    }
 
 }

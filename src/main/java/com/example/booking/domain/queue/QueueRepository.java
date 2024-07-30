@@ -20,4 +20,8 @@ public interface QueueRepository {
     List<Token> findTokenActiveWithinLast5Minutes();
 
     void saveAll(List<Token> targetToken);
+
+    Optional<Token> findByToken(String token);
+
+    List<Token> findLatestWatingTokenByCount(TokenStatus tokenStatus, int i);
 }

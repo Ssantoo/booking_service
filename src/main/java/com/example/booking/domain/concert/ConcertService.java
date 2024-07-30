@@ -46,9 +46,9 @@ public class ConcertService {
     @Transactional
     public Reservation reserve(Reservation reservation, String token) {
         // 토큰 유효성 검사
-        Token tokens = queueService.findByToken(token)
-                .orElseThrow(() -> new NotReservableException("유효하지 않은 토큰입니다."));
-        tokens.validateActive();
+//        Token tokens = queueService.findByToken(token)
+//                .orElseThrow(() -> new NotReservableException("유효하지 않은 토큰입니다."));
+//        tokens.validateActive();
 
         // 좌석을 비관적 락으로 설정
         Seat seat = seatRepository.findByIdForUpdate(reservation.getSeat().getId())

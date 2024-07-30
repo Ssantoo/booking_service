@@ -93,4 +93,8 @@ public class Token {
         }
         throw new UserNotFoundException("유저를 찾을 수 없습니다");
     }
+
+    public boolean isActive() {
+        return false;
+    }
 }

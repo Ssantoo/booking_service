@@ -38,8 +38,8 @@ public class QueueService {
         int activeTokenCount = queueRepository.countByStatus(TokenStatus.ACTIVE);
         if (Queue.hasAvailableSlot(activeTokenCount)) {
             List<Token> targetTokens = queueRepository.findLatestWatingTokenByCount(TokenStatus.WAITING, Queue.countAvailableSlot(activeTokenCount));
-            List<Token> targetToken = targetTokens.stream().map(Token::activate).toList();
-            queueRepository.saveAll(targetToken);
+            //List<Token> targetToken = targetTokens.stream().map(Token::activate).toList();
+            //queueRepository.saveAll(targetToken);
 
         }
     }
@@ -49,4 +49,7 @@ public class QueueService {
         return Token.getUserPositionInQueue(queue, userId);
     }
 
+    public Optional<Token> findByToken(String token) {
+        return queueRepository.findByToken(token);
+    }
 }

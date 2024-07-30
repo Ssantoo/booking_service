@@ -1,7 +1,9 @@
 package com.example.booking.domain.user;
 
+import com.example.booking.domain.concert.Concert;
 import com.example.booking.domain.concert.Reservation;
 import com.example.booking.domain.concert.ReservationRepository;
+import com.example.booking.domain.concert.Seat;
 import com.example.booking.support.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -20,29 +22,17 @@ public class UserService {
     }
 
     public User getUserById(Long userId) {
-    return userRepository.findById(userId);
-}
+        return userRepository.findById(userId);
+    }
 
-//    @Transactional
-//    public User chargePoint(long userId, int amount) {
-//        System.out.println("포인트 충전 : " + userId);
-//
-//        User user = userRepository.findByIdWithLock(userId);
-//        user = user.charge(amount);
-//        System.out.println("충전: " + userId);
-//        return userRepository.charge(user);
-//    }
     @Transactional
     public User chargePoint(long userId, int amount) {
         try {
 
             User user = userRepository.findByIdWithLock(userId);
             user = user.charge(amount);
-            System.out.println("충전: " + userId);
             return userRepository.save(user);
         } catch (ObjectOptimisticLockingFailureException e) {
-            // 충돌 처리 로직 (예: 재시도 로직)
-            System.out.println("Optimistic Locking 충돌 발생: " + e.getMessage());
             throw e;
         }
     }
@@ -51,9 +41,16 @@ public class UserService {
     @Transactional
     public User usePoint(long userId, Reservation reservation) {
         Reservation getReservation = reservationRepository.findById(reservation.getId());
+
+
+        Seat seat = getReservation.getSeat();
+        seat.getSeatNumber();
+
+        int totalPrice = getReservation.getTotalPrice();
         User user = userRepository.findByIdWithLock(userId);
-        User updatedUser = user.use(getReservation.getTotalPrice());
-        return userRepository.save(updatedUser);
+        user.use(totalPrice);
+
+        return userRepository.save(user);
     }
 
 
