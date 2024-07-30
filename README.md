@@ -99,4 +99,149 @@
 </details>
 
 
+## Lock Study
 
+### Lock ###
+
+*정의*
+
+- 데이터베이스에서 동시성을 관리하고 데이터 무결성을 유지 하기 위해 사용
+
+
+*유형*
+- s-lock ( 공유락 )
+```
+    공유락은 여러 트랜잭션이 동시에 리소스를 읽을 수 있게 하되, 
+    그 리소스를 수정할 수 없도록 한다
+    즉, 읽게는 해주지만 쓰지는 마~
+```
+- x-lock ( 배타락 )
+```
+   배타락은 특정 리소스를 수정해야 할 때 사용
+   트랜잭션이 리소스를 독점적으로 접근할 수 있으며, 
+   다른 트랜잭션이 해당 리소스를 읽거나 쓸 수 없도록 한다
+   즉, 읽지도 쓰지도 아무것도 하지말고 기다려~
+```
+    
+그렇다면 우리가 사용할 LockModeType 에는
+
+            LockModeType
+
+    - Pessimistic_read (s-lock)
+    - Pessimistic_write (x-lock)
+
+*문제*
+
+예약시스템을 한다고 했을 때
+
+                tx 1 { PESSIMISTIC_READ        update }
+                tx 2  { PESSIMISTIC_READ        update }
+
+시도한다면 결과는?
+<details>
+    <summary></summary>
+
+둘다 실패
+
+```
+        tx 1 { PESSIMISTIC_READ        update }
+                                    (tx2 가 s-lock 소지중이야 너 기다려)
+        tx 2  { PESSIMISTIC_READ        update }
+                                         (tx1 이 s-lock 소지중이야 너 기다려)
+                                         = 데드락
+```
+
+</details>
+
+그렇다면 두개의 충전 과 1개의 조회가 있다면?
+
+```
+    tx 1 { PESSIMISTIC_WRITE        update }
+    tx 2  { PESSIMISTIC_WRITE        update }
+    tx 3   { READ }
+```
+시도한다면 결과는?
+<details>
+    <summary></summary>
+
+tx3은 
+tx1, tx2가 끝날때까지 기다리게 된다
+```
+tx 1 { PESSIMISTIC_WRITE        update }
+tx 2  {                                 PESSIMISTIC_WRITE        update }
+tx 3   {                                                                  READ }
+
+```
+
+![비관적락](docs/비관적락테스트(포인트충전).png)
+
+</details>
+
+> 프로젝트에서 사용할만 로직
+> > <a href="#locking-details-charge"> 포인트 충전 </a>
+> 
+> > <a href="#locking-details-use"> 포인트 사용 </a>
+> 
+> >  <a href="#locking-details"> 좌석 예약 </a>
+
+<details id="locking-details-charge">
+    <summary>포인트 충전 및 사용</summary>
+
+![낙관적락](docs/낙관적락(포인트충전).png)
+
+![비관적락](docs/비관적락테스트(포인트충전).png)
+
+
+> 낙관적 락은 데이터 충돌이 드물고, 트랜잭션이 자주 충돌하지 않는 상황에서 효율적이다
+그러나 포인트 충전과 같은 동시성 문제가 발생하기 쉬운 작업에서는 낙관적 락이 자주 충돌을 일으켜 ObjectOptimisticLockingFailureException이 발생
+하므로 *비추*
+
+> 비관적 락은 충돌을 예방하기 위해 트랜잭션이 자원에 접근할 때 락을 걸어 다른 트랜잭션이 접근하지 못하게 한다.
+데이터의 일관성을 보장하지만, 트랜잭션 간의 대기 시간이 발생하고, 특히 고성능이 요구되는 환경에서는 성능 병목 및
+비관적 락의 DB 커넥션 점유 문제가 발생하므로 *비추*
+
+</details>
+
+<details id="#locking-details-use">
+    <summary>포인트 충전 및 사용</summary>
+
+![낙관적락](docs/낙관적락(포인트충전).png)
+
+![비관적락](docs/비관적포인트사용.png)
+
+
+> 낙관적 락은 데이터 충돌이 드물고, 트랜잭션이 자주 충돌하지 않는 상황에서 효율적이다
+그러나 포인트 충전과 같은 동시성 문제가 발생하기 쉬운 작업에서는 낙관적 락이 자주 충돌을 일으켜 ObjectOptimisticLockingFailureException이 발생
+하므로 *비추*
+
+> 비관적 락은 충돌을 예방하기 위해 트랜잭션이 자원에 접근할 때 락을 걸어 다른 트랜잭션이 접근하지 못하게 한다.
+데이터의 일관성을 보장하지만, 트랜잭션 간의 대기 시간이 발생하고, 특히 고성능이 요구되는 환경에서는 성능 병목 및
+비관적 락의 DB 커넥션 점유 문제가 발생하므로 *비추*
+
+</details>
+
+
+<details id="locking-details">
+    <summary>좌석 예약</summary>
+비관적락
+
+![비관적락](docs/좌석예약lock상태확인.png)
+
+![비관적락](docs/좌석예약비관적락테스트.png)
+
+낙관적락
+
+![낙관적락](docs/좌석예약낙관적.png)
+
+![낙관적락](docs/낙관적락예약의단점.png)
+
+
+> 낙관적 락은 데이터 충돌이 드물고, 트랜잭션이 자주 충돌하지 않는 상황에서 효율적이다
+그러나 포인트 충전과 같은 동시성 문제가 발생하기 쉬운 작업에서는 낙관적 락이 자주 충돌을 일으켜 ObjectOptimisticLockingFailureException이 발생
+하므로 *비추*
+
+> 비관적 락은 충돌을 예방하기 위해 트랜잭션이 자원에 접근할 때 락을 걸어 다른 트랜잭션이 접근하지 못하게 한다.
+데이터의 일관성을 보장하지만, 트랜잭션 간의 대기 시간이 발생하고, 특히 고성능이 요구되는 환경에서는 성능 병목 및
+비관적 락의 DB 커넥션 점유 문제가 발생하므로 *비추*
+
+</details>

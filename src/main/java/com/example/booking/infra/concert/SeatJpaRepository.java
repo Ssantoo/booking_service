@@ -1,6 +1,5 @@
 package com.example.booking.infra.concert;
 
-import com.example.booking.domain.concert.Seat;
 import com.example.booking.infra.concert.entity.SeatEntity;
 import com.example.booking.infra.concert.entity.SeatStatus;
 import jakarta.persistence.LockModeType;
@@ -15,9 +14,9 @@ import java.util.Optional;
 public interface SeatJpaRepository extends JpaRepository<SeatEntity, Long> {
     List<SeatEntity> findByScheduleId(long scheduleId);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Lock(LockModeType.OPTIMISTIC)
     @Query("SELECT s FROM SeatEntity s WHERE s.id = :seatId")
     Optional<SeatEntity> findByIdForUpdate(@Param("seatId") Long seatId);
 
-    List<SeatEntity> findByScheduleIdAndAvailable(long scheduleId, SeatStatus seatStatus);
+    List<SeatEntity> findByScheduleIdAndStatus(long scheduleId, SeatStatus seatStatus);
 }

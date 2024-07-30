@@ -1,15 +1,17 @@
 package com.example.booking.domain.concert;
 
-import com.example.booking.common.exception.AlreadyOccupiedException;
 
-import com.example.booking.common.exception.NotReservableException;
+import com.example.booking.domain.queue.QueueService;
 import com.example.booking.domain.queue.Token;
-import com.example.booking.domain.queue.TokenService;
+
 
 import com.example.booking.infra.concert.entity.SeatStatus;
-import jakarta.transaction.Transactional;
+import com.example.booking.support.exception.AlreadyOccupiedException;
+import com.example.booking.support.exception.NotReservableException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class ConcertService {
 
     private final ReservationRepository reservationRepository;
 
-    private final TokenService tokenService;
+    private final QueueService queueService;
     public List<Concert> getConcertList() {
         return concertRepository.findAll();
     }
@@ -43,37 +45,25 @@ public class ConcertService {
 
     @Transactional
     public Reservation reserve(Reservation reservation, String token) {
-
-        // 토큰의 활성 상태 확인
-        Token tokens = tokenService.findByToken(token)
+        // 토큰 유효성 검사
+        Token tokens = queueService.findByToken(token)
                 .orElseThrow(() -> new NotReservableException("유효하지 않은 토큰입니다."));
         tokens.validateActive();
 
-//        Seat seat = seatRepository.findById(reservation.getSeatId())
-//                .orElseThrow(() -> new IllegalStateException("해당 좌석을 찾을 수 없습니다."));
-
-        //좌석을 비관적 락 설정
-        Seat seat = seatRepository.findByIdForUpdate(reservation.getSeatId())
+        // 좌석을 비관적 락으로 설정
+        Seat seat = seatRepository.findByIdForUpdate(reservation.getSeat().getId())
                 .orElseThrow(() -> new IllegalStateException("해당 좌석을 찾을 수 없습니다."));
 
+        // 좌석 상태 확인 및 예약 처리
         if (seat.getStatus() != SeatStatus.AVAILABLE) {
             throw new AlreadyOccupiedException("이미 예약된 좌석입니다.");
         }
 
-        seat.hold();
-        seatRepository.save(seat);
+        seat.hold(); // 좌석 상태를 '예약 중'으로 변경
+        seatRepository.save(seat); // 좌석 상태 저장
 
-        //예약에 좌석이 있는지 체크
-//        Optional<Reservation> existingReservation = reservationRepository.findByConcertScheduleIdAndSeatIdForUpdate(
-//                reservation.getConcertScheduleId(), reservation.getSeatId());
-//
-//        if (existingReservation.isPresent() && existingReservation.get().getStatus() == ReservationStatus.PENDING) {
-//            throw new AlreadyOccupiedException("이미 예약된 좌석입니다.");
-//        }
-
-        // 기존 예약이 없으면 예약 상태를 PENDING으로 변경하고 좌석 상태도 변경 및 상태 저장
+        // 예약 상태를 PENDING으로 설정하고 저장
         reservation.hold();
-
         return reservationRepository.save(reservation);
     }
 
