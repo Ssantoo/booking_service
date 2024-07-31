@@ -6,14 +6,19 @@ import com.example.booking.domain.queue.Token;
 
 
 import com.example.booking.infra.concert.entity.SeatStatus;
+import com.example.booking.support.config.RedisConfig;
 import com.example.booking.support.exception.AlreadyOccupiedException;
 import com.example.booking.support.exception.NotReservableException;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +33,23 @@ public class ConcertService {
     private final ReservationRepository reservationRepository;
 
     private final QueueService queueService;
+
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final Logger logger = LoggerFactory.getLogger(ConcertService.class);
+
+
     public List<Concert> getConcertList() {
-        return concertRepository.findAll();
+
+        List<Concert> concertList = (List<Concert>) redisTemplate.opsForValue().get(RedisConfig.listKey());
+
+        if (concertList == null) {
+            logger.info("데이터베이스에서 조회");
+            concertList = concertRepository.findAll();
+            redisTemplate.opsForValue().set(RedisConfig.listKey(), concertList, 10, TimeUnit.MINUTES);
+        }
+
+        return concertList;
     }
 
     public List<Schedule> getDates(long concertId) {

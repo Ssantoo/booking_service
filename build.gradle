@@ -62,7 +62,8 @@ dependencies {
 
 	testImplementation 'uk.org.lidalia:slf4j-test:1.2.0'
 
-	implementation 'org.redisson:redisson-spring-boot-starter:3.16.8'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	//implementation 'org.redisson:redisson-spring-boot-starter:3.16.8'
 }
 
 tasks.named('test') {

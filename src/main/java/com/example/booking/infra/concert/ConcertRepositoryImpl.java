@@ -20,4 +20,14 @@ public class ConcertRepositoryImpl implements ConcertRepository {
         return concertJpaRepository.findAll().stream().map(ConcertEntity::toModel)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void deleteAll() {
+        concertJpaRepository.deleteAll();
+    }
+
+    @Override
+    public void save(ConcertEntity concertEntity) {
+        concertJpaRepository.save(concertEntity);
+    }
 }

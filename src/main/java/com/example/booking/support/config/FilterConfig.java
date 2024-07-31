@@ -1,6 +1,6 @@
 //package com.example.booking.support.config;
 //
-//import com.example.booking.support.filter.LoggingFilter;
+//
 //import org.springframework.boot.web.servlet.FilterRegistrationBean;
 //import org.springframework.context.annotation.Bean;
 //import org.springframework.context.annotation.Configuration;

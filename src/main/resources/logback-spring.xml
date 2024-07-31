@@ -1,6 +1,6 @@
 <configuration packagingData="true">
     <!-- 기본 Spring Boot 로그 설정 파일을 주석 처리 -->
-    <!--<include resource="org/springframework/boot/logging/logback/base.xml" />-->
+    <include resource="org/springframework/boot/logging/logback/base.xml" />
     <contextName>${HOSTNAME}</contextName>
 
     <!-- 다른 설정 파일을 포함 -->
