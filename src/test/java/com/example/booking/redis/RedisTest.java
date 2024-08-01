@@ -1,10 +1,8 @@
 package com.example.booking.redis;
 
-import com.example.booking.domain.concert.Concert;
-import com.example.booking.domain.concert.ConcertRepository;
-import com.example.booking.domain.concert.ConcertService;
-import com.example.booking.domain.concert.ConcertServiceTest;
+import com.example.booking.domain.concert.*;
 import com.example.booking.infra.concert.entity.ConcertEntity;
+import com.example.booking.infra.concert.entity.ScheduleEntity;
 import com.example.booking.support.config.RedisConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +16,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,17 +37,31 @@ public class RedisTest {
     @Autowired
     private ConcertRepository concertRepository;
 
+    @Autowired
+    private ScheduleRepository scheduleRepository;
+
+
     @BeforeEach
     public void setUp() {
-
         redisTemplate.delete("concerts::concertList");
+        redisTemplate.delete("concertDates::concertDateList");
 
         concertRepository.deleteAll();
+        scheduleRepository.deleteAll();
 
+        ConcertEntity concertEntity = concertRepository.save(
+                new ConcertEntity(null, "Concert 1", "Information 1")
+        );
         for (int i = 1; i <= 100000; i++) {
-            concertRepository.save(new ConcertEntity(null, "Concert " + i, "Information " + i));
+            ScheduleEntity scheduleEntity = new ScheduleEntity(
+                    null,
+                    LocalDateTime.now().plusDays(i),
+                    1000,
+                    1000,
+                    concertEntity
+            );
+            scheduleRepository.save(scheduleEntity);
         }
-
     }
 
     //콘서트 리스트 비교
@@ -76,7 +89,27 @@ public class RedisTest {
         assertEquals(100000, concerts.size());
     }
 
+    //콘서트날짜 비교
+    @Test
+    public void h2_db_콘서트_날짜_속도_테스트() {
+        long startTime = System.currentTimeMillis();
+        List<Schedule> schedules = concertService.getDates(1L);
+        long endTime = System.currentTimeMillis();
+        logger.info("걸린 시간: {} ms", endTime - startTime);
+        assertNotNull(schedules);
+        assertEquals(100000, schedules.size());
+    }
 
+    @Test
+    public void redis_캐시_콘서트_날짜_속도_테스트() {
+        concertService.getDates(1L);
+        long startTime = System.currentTimeMillis();
+        List<Schedule> schedules = concertService.getDates(1L);
+        long endTime = System.currentTimeMillis();
+        logger.info("걸린 시간: {} ms", endTime - startTime);
+        assertNotNull(schedules);
+        assertEquals(100000, schedules.size());
+    }
 
 
 

@@ -47,6 +47,7 @@ public class ConcertService {
         return concertRepository.findAll();
     }
 
+    @Cacheable(value = "concertDates", key = "'concertDateList:' + #concertId", cacheManager = "redisCacheManager")
     public List<Schedule> getDates(long concertId) {
         return scheduleRepository.findByConcertId(concertId);
     }
