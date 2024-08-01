@@ -13,9 +13,15 @@ public class RedisQueueService {
 
     private final RedisQueueRepository redisQueueRepository;
 
-    public void generate(Long userId) {
+    public RedisToken generate(Long userId) {
         RedisToken token = RedisToken.createToken(userId);
         String tokenValue = token.getTokenValue();
         redisQueueRepository.addToQueue(token, tokenValue);
+        return token;
+    }
+
+    public Long getQueuePosition(String tokenValue) {
+        Long position = redisQueueRepository.getPositionInQueue(tokenValue);
+        return position == null ? null : position + 1;  //zindex가 0부터 시작하니까
     }
 }

@@ -1,6 +1,7 @@
 package com.example.booking.controller.queue;
 
 import com.example.booking.domain.queue.RedisQueueService;
+import com.example.booking.domain.queue.RedisToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +19,20 @@ public class RedisQueueController {
      */
     @PostMapping("/generate")
     public ResponseEntity<String> generateToken(@RequestParam Long userId) {
-        redisQueueService.generate(userId);
-        return ResponseEntity.ok("대기열 진입하였습니다.");
+        RedisToken token = redisQueueService.generate(userId);
+        return ResponseEntity.ok(token.getTokenValue());
+    }
+
+    /**
+     * 자기 순번 api
+     */
+    @GetMapping("/position")
+    public ResponseEntity<Long> getQueuePosition(@RequestParam String tokenValue) {
+        Long position = redisQueueService.getQueuePosition(tokenValue);
+        if (position == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(position);
     }
 
 }

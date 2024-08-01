@@ -1,5 +1,7 @@
 package com.example.booking.domain.queue;
 
 public interface RedisQueueRepository {
-    void addToQueue(RedisToken token, String tokenValue);
+    RedisToken addToQueue(RedisToken token, String tokenValue);
+
+    Long getPositionInQueue(String tokenValue);
 }

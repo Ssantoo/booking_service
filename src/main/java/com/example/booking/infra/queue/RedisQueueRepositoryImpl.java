@@ -15,7 +15,14 @@ public class RedisQueueRepositoryImpl  implements RedisQueueRepository {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Override
-    public void addToQueue(RedisToken token, String tokenValue) {
+    public RedisToken addToQueue(RedisToken token, String tokenValue) {
         redisTemplate.opsForZSet().add(RedisQueue.getQueueKey(), tokenValue, token.getTimestamp());
+        return token;
+    }
+
+    @Override
+    public Long getPositionInQueue(String tokenValue) {
+        Long rank = redisTemplate.opsForZSet().rank(RedisQueue.getQueueKey(), tokenValue);
+        return rank;
     }
 }
