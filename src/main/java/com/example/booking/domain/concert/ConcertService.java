@@ -13,6 +13,8 @@ import com.example.booking.support.exception.NotReservableException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,18 +40,11 @@ public class ConcertService {
 
     private static final Logger logger = LoggerFactory.getLogger(ConcertService.class);
 
+    private final CacheManager cacheManager;
 
+    @Cacheable(value = "concerts", key = "'concertList'", cacheManager = "redisCacheManager")
     public List<Concert> getConcertList() {
-
-        List<Concert> concertList = (List<Concert>) redisTemplate.opsForValue().get(RedisConfig.listKey());
-
-        if (concertList == null) {
-            logger.info("데이터베이스에서 조회");
-            concertList = concertRepository.findAll();
-            redisTemplate.opsForValue().set(RedisConfig.listKey(), concertList, 10, TimeUnit.MINUTES);
-        }
-
-        return concertList;
+        return concertRepository.findAll();
     }
 
     public List<Schedule> getDates(long concertId) {
