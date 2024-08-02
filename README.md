@@ -246,4 +246,174 @@ tx 3   {                                                                  READ }
 
 ## Cache
 
+    RedisTemplate과 RedisCacheManager 두 가지 설정이 있는데
+    - RedisTemplate : Spring에서 Redis 서버와 상호 작용하기 위해 사용하는 직접적인 접근하는 방법
+    - RedisCacheManager : Spring의 캐시 추상화를 사용하여 캐시를 관리하는 방법 ( Spring의 캐시 어노테이션 (@Cacheable, @CachePut, @CacheEvict)과 함께 사용, 캐시의 설정, 만료 시간, 직렬화 방식 등을 관리 )
 
+
+### RedisTemplate
+
+<details id="locking-details">
+    <summary>RedisConfig</summary>
+
+     @Configuration
+    public class RedisConfig {
+
+        @Value("${spring.data.redis.host}")
+        private String redisHost;
+    
+        @Value("${spring.data.redis.port}")
+        private int redisPort;
+
+        @Bean
+        public LettuceConnectionFactory redisConnectionFactory() {
+            RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
+            redisStandaloneConfiguration.setHostName(redisHost);
+            redisStandaloneConfiguration.setPort(redisPort);
+            redisStandaloneConfiguration.setPassword(redisPassword);
+            return new LettuceConnectionFactory(redisStandaloneConfiguration);
+        }
+
+        @Bean
+        public RedisTemplate<String, Object> redisTemplate() {
+            RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+            redisTemplate.setConnectionFactory(redisConnectionFactory());
+            redisTemplate.setKeySerializer(new StringRedisSerializer());
+            redisTemplate.setValueSerializer(new StringRedisSerializer());
+            return redisTemplate;
+        }
+
+        @Bean
+        public RedisTemplate<String, byte[]> byteRedisTemplate() {
+            RedisTemplate<String, byte[]> redisTemplate = new RedisTemplate<>();
+            redisTemplate.setConnectionFactory(redisConnectionFactory());
+            redisTemplate.setKeySerializer(new StringRedisSerializer());
+            return redisTemplate;
+        }
+
+        @Bean
+        public RedisTemplate<String, Long> longRedisTemplate() {
+            RedisTemplate<String, Long> redisTemplate = new RedisTemplate<>();
+            redisTemplate.setConnectionFactory(redisConnectionFactory());
+            redisTemplate.setKeySerializer(new StringRedisSerializer());
+            redisTemplate.setValueSerializer(new GenericToStringSerializer<>(Long.class));
+            return redisTemplate;
+        }
+
+    }
+
+
+    //service
+    private final RedisTemplate<String, Long> redisTemplate;
+
+    Long cached = redisTemplate.opsForValue().get("Key");
+    
+
+</details>
+   
+
+### CacheManager 
+
+<details id="locking-details">
+    <summary>RedisConfig</summary>
+
+     @Configuration
+    public class RedisConfig {
+    
+        @Value("${spring.data.redis.host}")
+        private String redisHost;
+    
+        @Value("${spring.data.redis.port}")
+        private int redisPort;
+    
+        @Bean
+        public RedisConnectionFactory redisConnectionFactory() {
+            return new LettuceConnectionFactory(new RedisStandaloneConfiguration(redisHost, redisPort));
+        }
+    
+        @Bean
+        public RedisTemplate<String, Object> redisTemplate(ObjectMapper objectMapper) {
+            RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+            redisTemplate.setConnectionFactory(redisConnectionFactory());
+    
+            redisTemplate.setKeySerializer(new StringRedisSerializer());
+            redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
+            redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+            redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
+    
+            return redisTemplate;
+        }
+    
+        @Bean
+        public CacheManager redisCacheManager(RedisConnectionFactory redisConnectionFactory) {
+            return RedisCacheManager.RedisCacheManagerBuilder
+                    .fromConnectionFactory(redisConnectionFactory)
+                    .cacheDefaults(defaultConfiguration())
+                    .withInitialCacheConfigurations(configureMap())
+                    .build();
+        }
+    
+        @Bean
+        public ObjectMapper objectMapper() {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            objectMapper.findAndRegisterModules();
+            return objectMapper;
+        }
+    
+        private Map<String, RedisCacheConfiguration> configureMap() {
+            Map<String, RedisCacheConfiguration> cacheConfigurationMap = new HashMap<>();
+            cacheConfigurationMap.put("getRedisWithCacheManager", defaultConfiguration().entryTtl(Duration.ofMinutes(5)));
+            return cacheConfigurationMap;
+        }
+    
+        private RedisCacheConfiguration defaultConfiguration() {
+            return RedisCacheConfiguration.defaultCacheConfig()
+                    .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                    .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper())))
+                    .entryTtl(Duration.ofMinutes(10));
+        }
+    
+    }
+
+
+    //service
+    @Cacheable(value = "concerts", key = "'concertList'", cacheManager = "redisCacheManager")
+    public List<Concert> getConcertList() {
+    
+
+</details>
+
+>자주 호출하는 데이터는 "실시간성" 에 문제가 생길 수 있고
+예를 들어 
+누군가 예약 -> 캐시 깨주고
+누군가 예약이 만료 -> 캐시 깨주고
+누군가 예약/결제 취소 -> 캐시 깨주고
+코드가 복잡해지고 관리하기 어려워지게된다<br>
+진짜 단순하게 자주 바뀌지 않는 "콘서트 정보 조회", "콘서트 날짜 조회" 를 Cache로 남겨 호출하도록 로직을 변경하였다.
+
+<details id="cache">
+    <summary>콘서트 목록 조회</summary>
+
+H2
+
+![콘서트목록(h2)](docs/콘서트목록(h2).png)
+
+Redis
+
+![콘서트목록(redis)](docs/콘서트목록(redis).png)
+
+</details>
+
+<details id="cache">
+    <summary>콘서트 날짜 조회</summary>
+
+H2
+
+![콘서트날짜조회(H2)](docs/콘서트날짜조회(H2).png)
+
+Redis
+
+![콘서트날짜조회(Redis))](docs/콘서트날짜조회(Redis).png)
+
+</details>
