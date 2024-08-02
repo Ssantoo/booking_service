@@ -111,4 +111,31 @@ public class QueueMyPositionIntegrationTest {
 
         assertThat(waitUserCount).isEqualTo(10);
     }
+
+    @Test
+    public void 만료된_토큰_처리_테스트() throws InterruptedException {
+        // 토큰 생성 및 활성화
+        for (long i = 1; i <= 15; i++) {
+            redisQueueService.generate(i);
+        }
+
+        // 6분 후 토큰 만료
+        Thread.sleep(360000);
+
+        // 만료된 토큰 처리
+        redisQueueService.handleExpiredTokens();
+
+        // 활성화된 사용자 수 확인
+        int activeUserCount = redisQueueService.getActiveUserCount();
+        logger.info("활성화된 사용자 수: {}", activeUserCount);
+
+        // 대기 중인 사용자 수 확인
+        int waitUserCount = Objects.requireNonNull(redisTemplate.opsForZSet().size(QUEUE_KEY)).intValue();
+        logger.info("대기 중인 사용자 수: {}", waitUserCount);
+
+        assertThat(activeUserCount).isEqualTo(0);
+        assertThat(waitUserCount).isEqualTo(15);
+    }
+
+
 }

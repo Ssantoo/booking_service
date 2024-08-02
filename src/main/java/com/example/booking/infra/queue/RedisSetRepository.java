@@ -59,6 +59,29 @@ public class RedisSetRepository {
         Set<String> activeKeys = redisTemplate.keys(RedisToken.getActiveUserPrefix() + "*");
         return activeKeys != null ? activeKeys.size() : 0;
     }
+
+    // 활성 토큰 만료 처리
+    public void handleExpiredTokens() {
+        Set<String> activeKeys = redisTemplate.keys(RedisToken.getActiveUserPrefix() + "*");
+        if (activeKeys != null) {
+            activeKeys.forEach(activeKey -> {
+                if (!Boolean.TRUE.equals(redisTemplate.hasKey(activeKey))) {
+                    String[] parts = activeKey.split(":");
+                    String uuid = parts[1];
+                    Long userId = Long.parseLong(parts[2]);
+                    RedisToken token = RedisToken.builder()
+                            .uuid(uuid)
+                            .userId(userId)
+                            .timestamp(System.currentTimeMillis())
+                            .build();
+                    String tokenValue = token.getTokenValue();
+                    addToQueue(token, tokenValue);
+                }
+            });
+        }
+    }
+
+
 }
 
 

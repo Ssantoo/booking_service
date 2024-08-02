@@ -59,5 +59,10 @@ public class RedisQueueService {
     public int getActiveUserCount() {
         return redisSetRepository.countActiveTokens();
     }
+
+    // 만료된 토큰 처리
+    public void handleExpiredTokens() {
+        redisSetRepository.handleExpiredTokens();
+    }
 }
 
