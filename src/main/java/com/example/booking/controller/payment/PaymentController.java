@@ -16,10 +16,10 @@ public class PaymentController {
 
     private final PaymentFacade paymentFacade;
 
-//    @Operation(summary = "콘서트 예약 결제")
-//    @PostMapping("/pay")
-//    public ResponseEntity<PaymentResponse> pay(@RequestParam Long userId, @RequestParam Long reservationId) {
-//        PaymentResponse response = PaymentResponse.from(paymentFacade.processPayment(userId, reservationId));
-//        return ResponseEntity.ok(response);
-//    }
+    @Operation(summary = "콘서트 예약 결제")
+    @PostMapping("/pay")
+    public ResponseEntity<PaymentResponse> pay(@RequestParam Long userId, @RequestParam Long reservationId, @RequestParam String activeToken) {
+        PaymentResponse response = PaymentResponse.from(paymentFacade.processPayment(userId, reservationId, activeToken));
+        return ResponseEntity.ok(response);
+    }
 }

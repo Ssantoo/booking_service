@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -63,6 +64,18 @@ public class RedisQueueService {
     // 만료된 토큰 처리
     public void handleExpiredTokens() {
         redisSetRepository.handleExpiredTokens();
+    }
+
+    // 특정 사용자의 활성 토큰 만료
+    public void expireToken(RedisToken token) {
+        String activeKey = token.getActiveUserKey();
+        redisSetRepository.delete(activeKey);
+    }
+
+    // 토큰이 활성 상태인지 확인
+    public boolean isActive(String tokenValue) {
+        RedisToken token = RedisToken.parseTokenValue(tokenValue);
+        return redisSetRepository.isActive(token);
     }
 }
 

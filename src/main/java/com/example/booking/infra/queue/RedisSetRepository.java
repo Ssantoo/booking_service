@@ -82,6 +82,9 @@ public class RedisSetRepository {
     }
 
 
+    public void delete(String activeKey) {
+        redisTemplate.delete(activeKey);
+    }
 }
 
 
