@@ -1,5 +1,6 @@
 package com.example.booking.queue;
 
+
 import com.example.booking.domain.queue.RedisQueueService;
 import com.example.booking.domain.queue.RedisToken;
 import com.example.booking.domain.user.User;
@@ -17,12 +18,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Objects;
 import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-public class QueueMyPositionIntegrationTest {
+public class RefactoringTest {
 
     private static final Logger logger = LoggerFactory.getLogger(QueueMyPositionIntegrationTest.class);
 
@@ -62,23 +62,23 @@ public class QueueMyPositionIntegrationTest {
 
     @AfterEach
     public void tearDown() {
-//        redisTemplate.delete(QUEUE_KEY);
-//
-////        Set<String> activeKeys = redisTemplate.keys(ACTIVE_KEY_PREFIX + "*");
-////        if (activeKeys != null && !activeKeys.isEmpty()) {
-////            redisTemplate.delete(activeKeys);
-////        }
+        redisTemplate.delete(QUEUE_KEY);
+
+        Set<String> activeKeys = redisTemplate.keys(ACTIVE_KEY_PREFIX + "*");
+        if (activeKeys != null && !activeKeys.isEmpty()) {
+            redisTemplate.delete(activeKeys);
+        }
     }
 
     @Test
-    public void 대기열_21번_위치_확인_테스트() {
+    public void 대기열_10번_위치_확인_테스트() {
         Long userId = 1L;
         RedisToken token = redisQueueService.generate(userId);
         logger.info("토큰 : {}", token);
         Long position = redisQueueService.getQueuePosition(token.getTokenValue());
 
         assertThat(position).isNotNull();
-        assertThat(position).isEqualTo(21L);
+        assertThat(position).isEqualTo(10L);
     }
 
     @Test
@@ -93,7 +93,23 @@ public class QueueMyPositionIntegrationTest {
     }
 
     @Test
-    public void 활성화된_인원_대기열_인원체크() {
+    public void 활성화된_토큰_인원수_확인_테스트2() {
+        redisQueueService.activateUsers();
+
+        int activeUserCount = redisQueueService.getActiveUserCount();
+        logger.info("활성화된 사용자 수: {}", activeUserCount);
+
+        assertThat(activeUserCount).isGreaterThan(0);
+        assertThat(activeUserCount).isLessThanOrEqualTo(MAX_ACTIVE_USERS);
+
+        int waitUserCount = Objects.requireNonNull(redisTemplate.opsForZSet().size(QUEUE_KEY)).intValue();
+        logger.info("대기 중인 사용자 수: {}", waitUserCount);
+
+        assertThat(waitUserCount).isEqualTo(10);
+    }
+
+    @Test
+    public void 활성화된_토큰_인원수_확인_테스트3() {
 
         redisQueueService.activateUsers();
 
