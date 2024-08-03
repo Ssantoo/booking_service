@@ -32,8 +32,8 @@ public class QueueGenerateIntegrationTest {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-     @Autowired
-     private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     private static final String QUEUE_KEY = "WAIT";
 
@@ -46,7 +46,7 @@ public class QueueGenerateIntegrationTest {
                 .name("조현재")
                 .point(1000)
                 .build();
-         userRepository.save(user);
+        userRepository.save(user);
     }
 
     @AfterEach
@@ -71,4 +71,7 @@ public class QueueGenerateIntegrationTest {
 
         assertThat(tokenExists).isTrue();
     }
+
+
 }
+
