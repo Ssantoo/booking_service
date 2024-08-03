@@ -16,15 +16,7 @@ public class PaymentService {
 
     @Transactional
     public Payment pay(User user, Reservation reservation) {
-
-//        final User payUser = userRepository.findByIdWithLock(user.getId()).use(reservation.getTotalPrice());
-//        final User payedUser = userRepository.save(payUser);
-//        final Payment payment = Payment.pay(payedUser, reservation);
-//
-//        return paymentRepository.save(payment);
-
         final User updatedUser = user.use(reservation.getTotalPrice());
-
         final Payment payment = Payment.pay(updatedUser, reservation);
         return paymentRepository.save(payment);
     }
