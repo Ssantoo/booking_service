@@ -13,15 +13,15 @@ public class Concert {
     private final Long id;
     private final String name;
     private final String information;
-    //private final List<Schedule> schedules;
+    private Schedule schedules;
 
-//    @Builder
-//    public Concert(Long id, String name, String information, List<Schedule> schedules) {
-//        this.id = id;
-//        this.name = name;
-//        this.information = information;
-//        this.schedules = schedules;
-//    }
+    @Builder
+    public Concert(Long id, String name, String information, Schedule schedules) {
+        this.id = id;
+        this.name = name;
+        this.information = information;
+        this.schedules = schedules;
+    }
 
     @Builder
     public Concert(Long id, String name, String information) {

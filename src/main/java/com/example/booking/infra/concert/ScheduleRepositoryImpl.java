@@ -21,4 +21,14 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
                 .map(ScheduleEntity::toModel)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void deleteAll() {
+        scheduleJpaRepository.deleteAll();
+    }
+
+    @Override
+    public void save(ScheduleEntity schedule) {
+        scheduleJpaRepository.save(schedule);
+    }
 }

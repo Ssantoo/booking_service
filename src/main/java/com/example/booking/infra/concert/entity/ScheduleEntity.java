@@ -1,5 +1,6 @@
 package com.example.booking.infra.concert.entity;
 
+import com.example.booking.domain.concert.Concert;
 import com.example.booking.domain.concert.Schedule;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -41,12 +42,20 @@ public class ScheduleEntity {
                 .build();
     }
 
-    public static ScheduleEntity from(Schedule schedule){
+    public static ScheduleEntity from(Schedule schedule) {
+        if (schedule == null) {
+            throw new IllegalArgumentException("Schedule cannot be null");
+        }
+
+        Concert concert = schedule.getConcert();
+        ConcertEntity concertEntity = concert != null ? ConcertEntity.from(concert) : null;
+
         return ScheduleEntity.builder()
                 .id(schedule.getId())
                 .dateTime(schedule.getDateTime())
+                .totalSeats(schedule.getTotalSeats())
                 .availableSeats(schedule.getAvailableSeats())
-                .concert(ConcertEntity.from(schedule.getConcert()))
+                .concert(concertEntity)
                 .build();
     }
 

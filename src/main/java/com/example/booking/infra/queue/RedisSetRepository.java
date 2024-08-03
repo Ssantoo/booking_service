@@ -14,29 +14,29 @@ public class RedisSetRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    // 대기열 추가
+    // 대기열 추가   ZADD ( Sorted Set에 추가 )
     public RedisToken addToQueue(RedisToken token, String tokenValue) {
         redisTemplate.opsForZSet().add(RedisToken.getQueueKey(), tokenValue, token.getTimestamp());
         return token;
     }
 
-    // 순서 체크
+    // 순서 체크 ZRANK (Sorted Set에서 순서 조회)
     public Long getPositionInQueue(String tokenValue) {
         return redisTemplate.opsForZSet().rank(RedisToken.getQueueKey(), tokenValue);
     }
 
-    // 토큰을 활성화 상태로 설정
+    // 토큰을 활성화 상태로 설정 SET (String 값 설정)
     public void activateUser(RedisToken token) {
         String activeKey = token.getActiveUserKey();
         redisTemplate.opsForValue().set(activeKey, token.getUserId().toString(), 6, TimeUnit.MINUTES);
     }
 
-    // 대기열에서 제거
+    // 대기열에서 제거 ZREM (Sorted Set에서 제거)
     public void removeFromQueue(String tokenValue) {
         redisTemplate.opsForZSet().remove(RedisToken.getQueueKey(), tokenValue);
     }
 
-    // 활성 사용자로 변경
+    // 활성 사용자로 변경   ZRANGE (Sorted Set에서 범위 내의 값 조회)
     public void activateUsers(int count) {
         Set<String> tokens = redisTemplate.opsForZSet().range(RedisToken.getQueueKey(), 0, count - 1);
         if (tokens != null) {
@@ -48,13 +48,13 @@ public class RedisSetRepository {
         }
     }
 
-    // 토큰이 활성화 상태인지 확인
+    // 토큰이 활성화 상태인지 확인  EXISTS/KEYS (키 존재 여부 확인)
     public boolean isActive(RedisToken token) {
         String activeKey = token.getActiveUserKey();
         return Boolean.TRUE.equals(redisTemplate.hasKey(activeKey));
     }
 
-    // 활성화된 토큰 인원수를 카운트
+    // 활성화된 토큰 인원수를 카운트 KEYS (패턴에 맞는 키 조회)
     public int countActiveTokens() {
         Set<String> activeKeys = redisTemplate.keys(RedisToken.getActiveUserPrefix() + "*");
         return activeKeys != null ? activeKeys.size() : 0;
@@ -81,7 +81,7 @@ public class RedisSetRepository {
         }
     }
 
-
+    // DEL (키 삭제)
     public void delete(String activeKey) {
         redisTemplate.delete(activeKey);
     }

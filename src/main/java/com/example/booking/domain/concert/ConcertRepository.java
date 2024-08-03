@@ -10,5 +10,5 @@ public interface ConcertRepository {
 
     void deleteAll();
 
-    void save(ConcertEntity concertEntity);
+    ConcertEntity save(ConcertEntity concert);
 }

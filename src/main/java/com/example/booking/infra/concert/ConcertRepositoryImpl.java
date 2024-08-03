@@ -27,7 +27,7 @@ public class ConcertRepositoryImpl implements ConcertRepository {
     }
 
     @Override
-    public void save(ConcertEntity concertEntity) {
-        concertJpaRepository.save(concertEntity);
+    public ConcertEntity save(ConcertEntity concert) {
+        return concertJpaRepository.save(concert);
     }
 }
