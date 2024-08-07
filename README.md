@@ -486,7 +486,10 @@ Status 컬럼에 좌석 예약 상태에 따른 조회가 많으며, <br> 예약
 <details id="exam">
     <summary>비교</summary>
 
-프로시저를 통하여 DB에 데이터를 추가하여 테스트
+>데이터
+>concert - 1 row
+>schedule - 4 row
+>seat - 4000 row (각 scheduleId 당 1000 row씩) / 좌석 상태는 AVAILABLE : RESERVED : HOLD = 7 : 2 : 1
 
 ```
 EXPLAIN ANALYZE
