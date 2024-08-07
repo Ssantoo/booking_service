@@ -421,4 +421,120 @@ Redis
 
 ## Index
 
-> 
+*정의*
+
+> 추가적인 쓰기 작업과 저장 공간을 활용하여 데이터베이스 테이블의 검색 속도를 향상시키기 위한 자료구조<br>
+하지만 인덱스는 조회 성능을 높일 수 있지만 아래 사항들을 고려하여 설계해야한다<br>
+    1. 한번에 찾을 수 있는 값 - 데이터 중복이 적은 컬럼<br>
+    2. 인덱스 재정렬 최소화 - 데이터 삽입, 수정이 적은 컬럼<br>
+    3. 인덱스의 목적은 검색 - 조회에 자주 사용되는 컬럼<br>
+    4. 너무 많지 않은 인덱스 ( 약 3~4개 ) - 인덱스 또한 공간을 차지함<br>
+
+*카디널리티*
+
+> cardinality refers to the uniqueness of data values contained in a particular column (attribute) of a database table. The lower the cardinality, the more duplicated elements in a column. Thus, a column with the lowest possible cardinality would have the same value for every row. SQL databases use cardinality to help determine the optimal query plan for a given query.<br>
+즉, 데이터의 중복 수치<br>
+중복도가 ‘낮으면’ 카디널리티가 ‘높다’고 표현한다.<br>
+중복도가 ‘높으면’ 카디널리티가 ‘낮다’고 표현한다.<br>
+
+[출처](https://en.wikipedia.org/wiki/Cardinality_(SQL_statements))
+
+그래서!! Index를 어떻게 하면 잘 사용하는건데?
+
+>카디널리티가 높은 것
+>* 기본적인 데이터의 성격
+>    * 데이터 중복이 적어 한번에 찾을 수 있는 값
+>    * 삽입, 수정이 적은 컬럼
+>    * 조회에 자주 사용되는 컬럼
+>* 데이터의 생명주기, 데이터 분포도
+>    * 데이터의 값에 생명주기가 있는 경우, live한 데이터 값들을 유의미하게 만들 수 있음 (e.g. 주문 상태값)
+>    * 데이터가 어떤 성향으로 분포되어 있는지 확인, 두 가지의 상태값이어도 99:1의 분포도라면 1을 찾기 위해 비용 소모가 클 수 있음 (e.g. 좌석 예매 상태)
+>* 데이터 중복 사용 관점
+>    * 인덱스도 하나의 테이블로 저장, 관리되기 때문에 하나의 인덱스로 처리가 가능한 경우는 하나로 처리될 수 있도록
+>* 복합 인덱스인 경우 우선정렬을 따르기 때문에, 첫 번째 컬럼이 무엇이 되는지도 중요
+
+그렇다면 위에처럼 잘 쓰려면 유의사항 또한 중요!!
+
+>* 인덱스 컬럼의 값과 타입을 그대로 사용할 것 ( 인덱스는 컬럼의 값만 알고 있음 )
+>* LIKE, BETWEEN, <, > 등 범위 조건의 컬럼은 Index 가 적용되나 그 뒤 컬럼은 Index 적용 x
+	범위 조건의 경우, Index 사용에 유의할 것
+>* AND 는 ROW 를 줄이지만 OR 는 비교를 위해 ROW 를 늘리므로 Full-Scan 발생확률이 높음
+>* =, IN 은 다음 컬럼도 인덱스를 사용
+
+
+*나의서비스*
+
+
+
+<details id="index">
+    <summary>좌석조회</summary>
+    
+```
+@Override<br>
+public List<Seat> findAvailableSeatsByScheduleId(long scheduleId, SeatStatus status) {<br>
+        return seatJpaRepository.findByScheduleIdAndStatus(scheduleId, status).stream().map(SeatEntity::toModel).collect(Collectors.toList());<br>
+}
+```
+    
+카디널리티를 생각하여 카디널리티가 낮은 상태를 뒤에 넣는 방법으로 <br>
+scheduleId 컬럼을 먼저 식별하여 필터를 한번 하고 
+Status 컬럼에 좌석 예약 상태에 따른 조회가 많으며, <br> 예약 가능하거나 예약된 좌석의 상태를 조회하는데 있어
+복합 인텍스를 걸어 주었다 <br>
+>Status가 수정이 일어나지만 좌석조회 호출이 많을거 같아 사용
+
+
+<details id="exam">
+    <summary>비교</summary>
+
+프로시저를 통하여 DB에 데이터를 추가하여 테스트
+
+```
+EXPLAIN ANALYZE
+    SELECT *
+    FROM seat
+    WHERE schedule_id = 4 AND status = 'AVAILABLE';
+```
+
+![index적용전](docs/index적용전.png)
+
+![index적용후](docs/index적용후.png)
+
+
+
+인덱스 적용 전
+
+```
+-> Filter: (seat.`status` = 'AVAILABLE')  (cost=44.6 rows=333) (actual time=0.177..1.73 rows=700 loops=1)
+    -> Index lookup on seat using FKppyv67e00qxortqrtlmr7gfdo (schedule_id=4)  (cost=44.6 rows=1000) (actual time=0.173..1.56 rows=1000 loops=1)
+```
+
+인덱스 적용 후 
+
+```
+-> Index lookup on seat using idx_schedule_status (schedule_id=4, status='AVAILABLE'), with index condition: (seat.`status` = 'AVAILABLE')  (cost=81.2 rows=700) (actual time=0.11..0.675 rows=700 loops=1)
+
+```
+
+>실제 실행 시간 (actual time):
+>* 인덱스 적용 전: actual time=0.177..1.73 rows=700
+>* 인덱스 적용 후: actual time=0.11..0.675 rows=700
+>* 실제 실행 시간이 인덱스 적용 후 줄어든 것을 볼 수 있다
+>처리된 행 수 (rows):
+>* 인덱스 적용 전: rows=1000 (실제 700행 필터링)
+>* 인덱스 적용 후: rows=700
+>* 인덱스 적용 후 처리된 행 수가 줄어든 것을 볼 수 있다. 인덱스가 불필요한 행을 필터링에 도움이 됐다는 의미
+>테이블 스캔 vs 인덱스 사용:
+>* 인덱스 적용 전: 테이블 스캔 (Index lookup on seat using FKppyv67e00qxortqrtlmr7gfdo)
+>* 인덱스 적용 후: 인덱스 조회 (Index lookup on seat using idx_schedule_status)
+>* 인덱스 적용 후에는 테이블 스캔 대신 인덱스 조회를 사용하게 되어 더 효율적인 검색
+
+
+</details>
+
+
+
+</details>
+
+
+
+
