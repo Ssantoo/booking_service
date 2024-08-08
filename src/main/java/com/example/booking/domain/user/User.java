@@ -8,7 +8,7 @@ import lombok.Getter;
 public class User {
     private final Long id;
     private final String name;
-    private final int point;
+    private int point;
     private final int version;
 
     public User(Long id, String name, int point, int version) {
@@ -40,5 +40,7 @@ public class User {
         return new User(id, name, point-amount, version);
     }
 
-
+    public void restore(int amount) {
+        this.point += amount;
+    }
 }
