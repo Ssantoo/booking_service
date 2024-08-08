@@ -596,10 +596,12 @@ DB 마다 읽기 전용 트랜잭션에 대한 동작 방식이 다르다
 나의 서비스에서의 트랜잭션 범위 파악
 
 콘서트 예약
-
 기존 로직의 예약 과정
 1. 좌석 예약 요청 ▶ 예약중으로 좌석 상태 변경(HOLD) + 예약 상태 저장
 2. 결제 요청 & 완료 ▶ 유저 잔액 차감 + 예약완료(COMPLETED)로 예약 정보 수정 + 좌석 예약 완료
+
+<details id="reserv">
+    <summary>콘서트 예약</summary>
 
 ```
 @Transactional
@@ -623,7 +625,10 @@ public Reservation reserve(Reservation reservation, String token) {
 }
 ```
 
-예약된 좌석 결제
+</details>
+
+<details id="reserv">
+    <summary>예약된 좌석 결제</summary>
 
 ```
 @Component
@@ -665,11 +670,62 @@ public Payment pay(User user, Reservation reservation) {
 
 ```
 
+</details>
+
 #### 기존 로직에서 예약 정보를 
 
 
+#### 서비스의 규모가 확장되어 MSA 형태로 서비스를 분리한다면?
+
+MSA 구조에서의 서비스 분리 (module)
+
+    예약 서비스 (Reservation)
+    결제 서비스 (Payment)
+    좌석 서비스 (Seat)
+    사용자 서비스 (User)
+    토큰 서비스 (Token)
+
+#### 트랜잭션 처리의 한계와 해결방안
+
+1. 문제점 이벤트를 여러곳에서 호출한다면?
+   
+문제점
+
+    Payment 모듈에서 여러 곳에서 결제 이벤트가 호출될 수 있으며, 결제 실패 시 어디서 호출된 것인지 알 수 없다
+    다양한 이벤트 소스에서 발생한 결제 실패를 구분할 수 있는 방법 필요
+
+해결 방안
+
+    Transaction ID를 사용하여 이벤트 소스를 구분
+    결제 실패 시 Transaction ID에 따라 적절한 복구 로직 및 이벤트 호출
+
+```
+ // 이벤트 발행, 여기서 Transaction ID를 포함
+ eventPublisher.publishEvent(new ReservationEvent(this, savedReservation, user, transactionId));
 
 
+//복구
+if (transactionId == 101) {
+    // 포인트 복구 이벤트 발생
+    eventPublisher.publish(new PointRestoreEvent(userId, reservationId));
+} else if (transactionId == 102) {
+    // 현금 결제 실패 이벤트 발생
+    eventPublisher.publish(new CashPaymentFailedEvent(userId, reservationId));
+}
+
+```
+
+2. 락..
+
+문제점
+
+ 	분리된 서비스 구조에서는 하나의 트랜잭션 범위 내에서 락을 걸 수 없음
+	동일한 자원에 대한 동시 접근을 막기 어려움
+
+해결 방안
+
+	분산 락을 사용하여 동시성 문제를 해결
+	Redis, ZooKeeper와 같은 분산 락을 제공하는 시스템 사용
 
 
 
