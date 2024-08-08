@@ -565,10 +565,10 @@ Durability (영속성) <br>
 
 *주의사항*
 
->트랜잭션에는 필요한 최소의 코드에만 적용하는 것이 좋음
+>> 트랜잭션에는 필요한 최소의 코드에만 적용하는 것이 좋음
 
 
-#### @Transactional 과 JPA
+> #### @Transactional 과 JPA
  
 ```
 트랜잭션 범위 내의 1차 캐시
@@ -578,7 +578,7 @@ Durability (영속성) <br>
 매번 영속성 컨텍스트를 확인하여 변경 사항이 있는지 감지하고 엔티티의 개수만큼 UPDATE 쿼리가 실행되므로, 엔티티 개수가 많은 경우에는 많은 오버헤드가 발생할 수 있다
 ```
 
-#### @Transactional(readOnly=true)
+> #### @Transactional(readOnly=true)
 
 ```
 트랜잭션을 읽기 전용으로 수행
@@ -593,12 +593,19 @@ Spring Data JPA 에서 제공하는 JpaRepository 의 기본 구현체는 Simple
 DB 마다 읽기 전용 트랜잭션에 대한 동작 방식이 다르다
 ```
 
-나의 서비스에서의 트랜잭션 범위 파악
 
-콘서트 예약
-기존 로직의 예약 과정
-1. 좌석 예약 요청 ▶ 예약중으로 좌석 상태 변경(HOLD) + 예약 상태 저장
-2. 결제 요청 & 완료 ▶ 유저 잔액 차감 + 예약완료(COMPLETED)로 예약 정보 수정 + 좌석 예약 완료
+
+<br>
+<br>
+<br>
+
+
+*나의 서비스에서의 트랜잭션 범위 파악*
+
+>콘서트 예약
+>기존 로직의 예약 과정
+>>1. 좌석 예약 요청 ▶ 예약중으로 좌석 상태 변경(HOLD) + 예약 상태 저장
+>>2. 결제 요청 & 완료 ▶ 유저 잔액 차감 + 예약완료(COMPLETED)로 예약 정보 수정 + 좌석 예약 완료
 
 <details id="reserv">
     <summary>콘서트 예약</summary>
@@ -672,12 +679,32 @@ public Payment pay(User user, Reservation reservation) {
 
 </details>
 
-#### 기존 로직에서 예약 정보를 
+<br>
+<br>
 
+#### 기존 로직에서 Transaction 분리
+
+<details>
+	<summary>하나의 Transaction</summary>
+	
+ ![기존로직](docs/기존로직.png)
+
+</details>
+
+<details>
+	<summary>이벤트발생</summary>
+	
+![이벤트발생](docs/이벤트발생.png)
+
+</details>
+
+<br>
+<br>
 
 #### 서비스의 규모가 확장되어 MSA 형태로 서비스를 분리한다면?
 
-MSA 구조에서의 서비스 분리 (module)
+<details>
+	<summary>MSA 구조에서의 서비스 분리 (module)</summary>
 
     예약 서비스 (Reservation)
     결제 서비스 (Payment)
@@ -685,10 +712,16 @@ MSA 구조에서의 서비스 분리 (module)
     사용자 서비스 (User)
     토큰 서비스 (Token)
 
+</details>
+
+<br>
+<br>
+
 #### 트랜잭션 처리의 한계와 해결방안
 
-1. 문제점 이벤트를 여러곳에서 호출한다면?
-   
+<details>
+	<summary>1. 문제점 이벤트를 여러곳에서 호출한다면?</summary>
+
 문제점
 
     Payment 모듈에서 여러 곳에서 결제 이벤트가 호출될 수 있으며, 결제 실패 시 어디서 호출된 것인지 알 수 없다
@@ -715,7 +748,11 @@ if (transactionId == 101) {
 
 ```
 
-2. 락..
+</details>
+
+<details>
+	<summary>2. 락..</summary>
+
 
 문제점
 
@@ -726,6 +763,9 @@ if (transactionId == 101) {
 
 	분산 락을 사용하여 동시성 문제를 해결
 	Redis, ZooKeeper와 같은 분산 락을 제공하는 시스템 사용
+
+</details>
+
 
 
 
