@@ -541,3 +541,139 @@ EXPLAIN ANALYZE
 
 ## Transaction
 
+*정의*
+
+> 트랜잭션(Transaction)의 사전적 의미는 거래이고, <br>
+> 컴퓨터 과학 분야에서의 트랜잭션(Transaction)은 "더이상 분할이 불가능한 업무처리의 단위"를 의미<br>
+즉, 한꺼번에 수행되어야 할 일련의 연산모음을 의미<br>
+여러 개의 데이터베이스 연산(INSERT, UPDATE, DELETE 등)을 하나의 논리적인 작업 단위로 묶어서 실행<br>
+> 이 때, 모든 연산이 성공적으로 수행되면 트랜잭션을 커밋(commit)하여 데이터베이스에 반영하고, 하나라도 실패하면 롤백(rollback)하여 이전 상태로 되돌린다
+
+*성질*
+
+>Atomicity (원자성) <br>
+하나의 트랜잭션이 더 이상 작게 쪼갤 수 없는 최소한의 업무 단위이다. <br>
+트랜잭션의 연산은 데이터베이스에 모두 반영되든지 아니면 전혀 반영되지 않아야 한다. <br>
+Consistency (일관성) <br>
+트랜잭션이 그 실행을 성공적으로 완료하면 언제나 일관성 있는 데이터베이스 상태로 변환한다. <br>
+시스템이 가지고 있는 고정요소는 트랜잭션 수행 전과 트랜잭션 수행 완료 후의 상태가 같아야 한다. <br>
+Isolation (독립성) <br>
+둘 이상의 트랜잭션이 동시에 병행 실행되는 경우 어느 하나의 트랜잭션 실행 중에 다른 트랜잭션의 연산이 끼어들 수 없다. <br>
+수행중인 트랜잭션은 완전히 완료될 떄까지 다른 트랜잭션에서 수행 결과를 참조할 수 없다. <br>
+Durability (영속성) <br>
+성공적으로 완료된 트랜잭션의 결과는 시스템이 고장나더라도 영구적으로 반영되어야 한다. <br>
+
+*주의사항*
+
+>트랜잭션에는 필요한 최소의 코드에만 적용하는 것이 좋음
+
+
+#### @Transactional 과 JPA
+ 
+```
+트랜잭션 범위 내의 1차 캐시
+1차 캐시는 영속성 컨텍스트 내부에 존재하는 캐시로, 엔티티를 조회하면 그 결과를 저장
+이후 같은 엔티티를 조회하면 캐시에서 먼저 조회하게 되므로 데이터베이스를 접근하지 않고도 빠르게 가져올 수 있다
+트랜잭션 범위 내의 Dirty Checking
+매번 영속성 컨텍스트를 확인하여 변경 사항이 있는지 감지하고 엔티티의 개수만큼 UPDATE 쿼리가 실행되므로, 엔티티 개수가 많은 경우에는 많은 오버헤드가 발생할 수 있다
+```
+
+#### @Transactional(readOnly=true)
+
+```
+트랜잭션을 읽기 전용으로 수행
+스프링 프레임워크가 하이버네이트 세션 플러시 모드를 MANUAL로 설정하기 때문에 강제로 플러시를 호출하지 않은 한 플러시가 일어나지 않아, CUD 작업이 동작하지 않는다
+영속성 컨텍스트는 변경감지를 위한 스냅샷을 보관하지 않으므로 성능 향상
+트랜잭션 하위 시스템에 대한 힌트 역할을 수행
+write 연산을 실행했을 때 오류가 나는 것은 아니다
+DB가 master와 slave로 나누어져 있는 경우 readOnly 를 통해 slave 를 호출할 수 있다
+Spring Data JPA 에서 제공하는 JpaRepository 의 기본 구현체는 SimpleJpaRepository 인데 이미 최상단에 @Transactional(readOnly) 가 붙어있다
+읽기 메서드들은 이미 readOnly 형태로 제공
+읽기 전용 힌트를 해설할 수 없는 트랜잭션 매니저는 exception을 던지지는 않고 hint를 무시한다.
+DB 마다 읽기 전용 트랜잭션에 대한 동작 방식이 다르다
+```
+
+나의 서비스에서의 트랜잭션 범위 파악
+
+콘서트 예약
+
+기존 로직의 예약 과정
+1. 좌석 예약 요청 ▶ 예약중으로 좌석 상태 변경(HOLD) + 예약 상태 저장
+2. 결제 요청 & 완료 ▶ 유저 잔액 차감 + 예약완료(COMPLETED)로 예약 정보 수정 + 좌석 예약 완료
+
+```
+@Transactional
+public Reservation reserve(Reservation reservation, String token) {
+
+    // 좌석을 비관적 락으로 설정
+    Seat seat = seatRepository.findByIdForUpdate(reservation.getSeat().getId())
+            .orElseThrow(() -> new IllegalStateException("해당 좌석을 찾을 수 없습니다."));
+    
+    // 좌석 상태 확인 및 예약 처리
+    if (seat.getStatus() != SeatStatus.AVAILABLE) {
+        throw new AlreadyOccupiedException("이미 예약된 좌석입니다.");
+    }
+    
+    seat.hold(); // 좌석 상태를 '예약 중'으로 변경
+    seatRepository.save(seat); // 좌석 상태 저장
+    
+    // 예약 상태를 PENDING으로 설정하고 저장
+    reservation.hold();
+    return reservationRepository.save(reservation);
+}
+```
+
+예약된 좌석 결제
+
+```
+@Component
+@RequiredArgsConstructor
+public class PaymentFacade {
+
+    private final PaymentService paymentService;
+    private final UserService userService;
+    private final ConcertService concertService;
+    private final RedisQueueService redisQueueService;
+
+
+    @Transactional
+    public Payment processPayment(Long userId, Long reservationId, String activeToken) {
+        if (!redisQueueService.isActive(activeToken)) {
+            throw new IllegalStateException("토큰이 활성 상태가 아닙니다.");
+        }
+        final User user = userService.getUserById(userId);
+        final Reservation reservation = concertService.getReservationById(reservationId);
+        final Payment payment = paymentService.pay(user, reservation);              // 포인트 사용, 예약
+        final Seat seat = reservation.getSeat();
+        concertService.changeStatus(seat);                                          // 결제 성공 후 좌석 상태 변경
+        RedisToken token = RedisToken.parseTokenValue(activeToken);     
+        redisQueueService.expireToken(token);
+        return payment;
+    }
+
+}
+```
+
+```
+
+public Payment pay(User user, Reservation reservation) {
+    final User updatedUser = user.use(reservation.getTotalPrice());         // 포인트 사용
+    userRepository.save(updatedUser);
+    final Payment payment = Payment.pay(updatedUser, reservation);          // 예약 상태 변경 
+    return paymentRepository.save(payment);
+}
+
+```
+
+#### 기존 로직에서 예약 정보를 
+
+
+
+
+
+
+
+
+
+
+
