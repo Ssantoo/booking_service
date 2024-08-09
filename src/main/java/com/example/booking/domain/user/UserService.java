@@ -54,5 +54,8 @@ public class UserService {
     }
 
 
-
+    public void restorePoints(User user, int amount) {
+        user.restore(amount);
+        userRepository.save(user);
+    }
 }
