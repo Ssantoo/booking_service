@@ -39,6 +39,8 @@ dependencies {
 	testImplementation 'io.rest-assured:rest-assured:5.3.1'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc:2.0.6.RELEASE'
 
+	implementation 'mysql:mysql-connector-java:8.0.32'
+
 	// Spring REST Docs 의존성
 	testImplementation 'org.springframework.restdocs:spring-restdocs-restassured'
 	// epages REST Docs 의존성
@@ -50,7 +52,7 @@ dependencies {
 	testImplementation 'com.epages:restdocs-api-spec-restassured:0.18.2'
 	testImplementation 'com.epages:restdocs-api-spec-mockmvc:0.18.2'
 	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.h2database:h2'
+	//runtimeOnly 'com.h2database:h2'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -68,6 +70,7 @@ dependencies {
 	// https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
 	implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.17.1'
 
+	implementation 'org.springframework.kafka:spring-kafka'
 
 }
 
