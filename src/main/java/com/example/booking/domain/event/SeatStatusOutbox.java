@@ -2,6 +2,8 @@ package com.example.booking.domain.event;
 
 import com.example.booking.infra.concert.entity.SeatStatusOutboxStatus;
 import com.example.booking.infra.concert.entity.SeatStatusOutboxType;
+import com.example.booking.infra.payment.entity.ReservationOutboxStatus;
+import com.example.booking.infra.payment.entity.ReservationOutboxType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -27,6 +29,14 @@ public class SeatStatusOutbox {
         this.retryCount = retryCount;
     }
 
+    public static SeatStatusOutbox create(String jsonData) {
+        return SeatStatusOutbox.builder()
+                .type(SeatStatusOutboxType.RESERVE)
+                .status(SeatStatusOutboxStatus.INIT)
+                .jsonData(jsonData)
+                .build();
+    }
+
 
     public void updateStatus(SeatStatusOutboxStatus newStatus) {
         this.status = newStatus;
@@ -36,6 +46,7 @@ public class SeatStatusOutbox {
         this.retryCount++;
     }
 
-
-
+    public void update() {
+        this.status = SeatStatusOutboxStatus.DONE;
+    }
 }

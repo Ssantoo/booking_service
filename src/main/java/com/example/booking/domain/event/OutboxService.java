@@ -31,4 +31,16 @@ public class OutboxService {
         outbox.update();
         reservationOutboxRepository.save(outbox);
     }
+
+    public SeatStatusOutbox saveSeatStatus(SeatStatusChangeEvent event) {
+        String jsonData = String.valueOf(event.getReservation());
+        return seatStatusOutboxRepository.save(SeatStatusOutbox.create(jsonData));
+    }
+
+    public void updateSeatStatus(Long outboxId) {
+        SeatStatusOutbox outbox = seatStatusOutboxRepository.findById(outboxId)
+                .orElseThrow(() -> new IllegalArgumentException("Outbox 찾을수 없습니다 " + outboxId));
+        outbox.update();
+        seatStatusOutboxRepository.save(outbox);
+    }
 }
