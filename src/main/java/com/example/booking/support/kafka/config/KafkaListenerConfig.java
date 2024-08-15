@@ -19,8 +19,14 @@ public class KafkaListenerConfig {
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String bootstrapServers;
 
+    @Value("${spring.kafka.consumer.enable-auto-commit}")
+    private String AUTO_COMMIT;
+
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
+
+    @Value("${spring.kafka.consumer.auto-offset-reset}")
+    private String AUTO_OFFSET_RESET;
 
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
@@ -29,6 +35,8 @@ public class KafkaListenerConfig {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, AUTO_COMMIT);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, AUTO_OFFSET_RESET);
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
