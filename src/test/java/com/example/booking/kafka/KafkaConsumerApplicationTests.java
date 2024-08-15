@@ -29,7 +29,7 @@ public class KafkaConsumerApplicationTests extends IntegrationTest {
         String topic = "test-topic";
         String msg = "expect-value";
 
-        kafkaProducer.publish(topic, msg);
+        kafkaProducer.publish(topic, 1L ,msg);
 
         var stringCaptor = ArgumentCaptor.forClass(String.class);
 

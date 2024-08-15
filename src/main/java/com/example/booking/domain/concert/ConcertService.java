@@ -14,6 +14,7 @@ import com.example.booking.infra.concert.entity.SeatStatus;
 import com.example.booking.support.exception.AlreadyOccupiedException;
 import com.example.booking.support.exception.NotReservableException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,9 +73,9 @@ public class ConcertService {
     @Transactional
     public Reservation reserve(Reservation reservation, String token) {
          //토큰 유효성 검사
-        Token tokens = queueService.findByToken(token)
-                .orElseThrow(() -> new NotReservableException("유효하지 않은 토큰입니다."));
-        tokens.validateActive();
+//        Token tokens = queueService.findByToken(token)
+//                .orElseThrow(() -> new NotReservableException("유효하지 않은 토큰입니다."));
+//        tokens.validateActive();
 
         User user = userRepository.findById(reservation.getUserId());
 
@@ -95,7 +97,7 @@ public class ConcertService {
 
 
         // 이벤트 발행
-        eventPublisher.publishEvent(new ReservationEvent(this, savedReservation, user));
+        eventPublisher.publishEvent(new ReservationEvent(this, null, savedReservation, user));
 
         return savedReservation;
     }

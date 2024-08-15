@@ -51,7 +51,7 @@ public class KafkaTest {
     public void 카프카_메세지_전송_테스트() throws InterruptedException {
         String msg = "테스트 메세지";
         log.info("보낸 메세지 : '{}'", msg);
-        kafkaProducer.publish("testTopic", msg);
+        kafkaProducer.publish("testTopic", 1L, msg);
         kafkaTemplate.flush();
 
         boolean messageReceived = latch.await(5, TimeUnit.SECONDS);
