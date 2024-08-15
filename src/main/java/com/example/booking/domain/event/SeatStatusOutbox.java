@@ -49,4 +49,8 @@ public class SeatStatusOutbox {
     public void update() {
         this.status = SeatStatusOutboxStatus.DONE;
     }
+
+    public void fail() {
+        this.status = SeatStatusOutboxStatus.FAIL;
+    }
 }

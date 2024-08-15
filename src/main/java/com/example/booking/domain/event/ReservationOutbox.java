@@ -48,4 +48,8 @@ public class ReservationOutbox {
     public void update() {
         this.status = ReservationOutboxStatus.DONE;
     }
+
+    public void fail() {
+        this.status = ReservationOutboxStatus.FAIL;
+    }
 }

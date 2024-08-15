@@ -4,12 +4,16 @@ import com.example.booking.domain.event.ReservationOutbox;
 import com.example.booking.domain.event.ReservationOutboxRepository;
 import com.example.booking.infra.concert.ReservationJpaRepository;
 import com.example.booking.infra.concert.entity.SeatEntity;
+import com.example.booking.infra.concert.entity.SeatStatusOutboxEntity;
 import com.example.booking.infra.payment.entity.ReservationOutboxEntity;
+import com.example.booking.infra.payment.entity.ReservationOutboxStatus;
 import com.example.booking.support.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -32,4 +36,18 @@ public class ReservationOutboxRepositoryImpl implements ReservationOutboxReposit
     public Optional<ReservationOutbox> findById(Long outboxId) {
         return reservationOutboxJpaRepository.findById(outboxId).map(ReservationOutboxEntity::toModel);
     }
+
+    @Override
+    public List<ReservationOutbox> findAllByStatus(ReservationOutboxStatus reservationOutboxStatus) {
+        return reservationOutboxJpaRepository.findAllByStatus(reservationOutboxStatus).stream()
+                .map(SeatStatusOutboxEntity::toModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void incrementReservation(ReservationOutbox outbox) {
+        reservationOutboxJpaRepository.save(ReservationOutboxEntity.from(outbox));
+    }
+
+
 }
