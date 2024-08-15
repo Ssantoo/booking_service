@@ -1,9 +1,12 @@
 package com.example.booking.kafka;
 
+import com.example.booking.consumer.ReservationConsumer;
+import com.example.booking.consumer.SeatStatusConsumer;
 import com.example.booking.domain.concert.*;
 import com.example.booking.domain.event.OutboxService;
 import com.example.booking.domain.event.ReservationEvent;
 import com.example.booking.domain.event.ReservationOutbox;
+import com.example.booking.domain.event.SeatStatusChangeEvent;
 import com.example.booking.infra.concert.entity.ReservationStatus;
 import com.example.booking.infra.concert.entity.SeatStatus;
 import com.example.booking.infra.payment.entity.ReservationOutboxStatus;
@@ -21,6 +24,9 @@ import org.springframework.test.context.jdbc.SqlGroup;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @EmbeddedKafka(partitions = 1, topics = {KafkaConstants.RESERVATION_TOPIC}, brokerProperties = {
@@ -41,6 +47,12 @@ public class KafkaEventFlowTest {
 
     @Autowired
     private ConcertService concertService;
+
+    @Autowired
+    private SeatStatusConsumer seatStatusConsumer;
+
+    @Autowired
+    private ReservationConsumer reservationConsumer;
 
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
@@ -72,7 +84,7 @@ public class KafkaEventFlowTest {
         concertService.reserve(reservation, token);
 
         // then: Kafka 메시지가 잘 수신되었는지 확인
-        ReservationEvent receivedEvent = kafkaConsumerTestListener.getReceivedEvent();
+        ReservationEvent receivedEvent = kafkaConsumerTestListener.getReceivedReservationEvent();
         assertThat(receivedEvent).isNotNull();
         assertThat(receivedEvent.getReservation().getId()).isEqualTo(reservation.getId());
         assertThat(receivedEvent.getUser().getId()).isEqualTo(reservation.getUserId());
@@ -82,5 +94,35 @@ public class KafkaEventFlowTest {
         assertThat(outbox).isNotNull();
         assertThat(outbox.getStatus()).isEqualTo(ReservationOutboxStatus.DONE);
     }
+
+    @Test
+    void 좌석_상태_변경_테스트() throws Exception {
+        // given: 메시지 준비 및 발행
+        Seat seat = Seat.builder()
+                .id(1L)
+                .status(SeatStatus.HOLD)
+                .build();
+
+        Reservation reservation = Reservation.builder()
+                .id(1L)
+                .seat(seat)
+                .build();
+
+        SeatStatusChangeEvent event = new SeatStatusChangeEvent(this, reservation, 1L);
+        String message = objectMapper.writeValueAsString(event);
+        kafkaTemplate.send(KafkaConstants.SEATSTATUS_TOPIC, message);
+
+        // when: 메시지 수신
+        SeatStatusChangeEvent receivedEvent = kafkaConsumerTestListener.getReceivedSeatStatusChangeEvent();
+
+        // then: 메시지 수신 여부 및 처리 로직 확인
+        assertThat(receivedEvent).isNotNull();
+        assertThat(receivedEvent.getReservation().getId()).isEqualTo(reservation.getId());
+
+        verify(outboxService, times(1)).updateSeatStatus(1L);
+        verify(concertService, times(1)).changeStatus(seat);
+    }
+
+
 
 }
