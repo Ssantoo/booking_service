@@ -27,7 +27,7 @@ public class PaymentService {
         paymentRepository.save(payment);
 
         // 좌석 상태 변경 이벤트 발행
-        eventPublisher.publishEvent(new SeatStatusChangeEvent(this, reservation));
+        eventPublisher.publishEvent(new SeatStatusChangeEvent(this, reservation, null));
 
         return payment;
         } catch (Exception e) {
