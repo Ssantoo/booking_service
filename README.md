@@ -768,6 +768,105 @@ if (transactionId == 101) {
 
 
 
+## K6 부하테스트
+
+#### API 리스트
+
+<details>
+	<summary>콘서트 조회</summary>
+
+k6 시도 코드
+
+```
+export default function () {
+    // 1. 콘서트 목록 조회
+    let concertListRes = http.get('http://localhost:8081/api/concert');
+    check(concertListRes, {
+        'status is 200': (r) => r.status === 200,
+        'response time is less than 500ms': (r) => r.timings.duration < 500,
+    });
+}
+```
+
+결과
+
+![이벤트발생](docs/콘서트목록조회(k6결과).png)
+
+</details>
+
+<details>
+	<summary>콘서트 날짜 조회</summary>
+
+k6 시도 코드
+
+```
+let datesRes = http.get(`http://localhost:8081/api/concert/1/available-dates`);
+    check(datesRes, {
+        'status is 200': (r) => r.status === 200,
+        'response time is less than 500ms': (r) => r.timings.duration < 500,
+    });
+```
+
+결과
+
+![이벤트발생](docs/예약가능날짜조회(k6).png)
+
+</details>
+
+<details>
+	<summary>콘서트 예약</summary>
+
+k6 시도 코드
+
+```
+export default function () {
+    let url = 'http://localhost:8081/api/concert/reserve-seat';
+
+    // 동일한 좌석 예약을 시도하는 요청 payload
+    let payload = JSON.stringify({
+        "token": "user-token",
+        "concertScheduleId": 1,
+        "seat": {
+            "id": 2,
+            "schedule_id": 1,
+            "seatNumber": 1,
+            "price": 97,
+            "status": "AVAILABLE",
+        },
+        "userId": 1
+    });
+
+    let params = {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
+
+    // 좌석 예약 요청
+    let res = http.post(url, payload, params);
+    console.log('Response status: ' + res.status);
+
+    // 요청 성공/실패 체크
+    check(res, {
+        'status is 200': (r) => r.status === 200,
+        'seat not double-booked': (r) => r.json().message !== '이미 예약된 좌석입니다.',
+    });
+
+}
+
+```
+
+결과
+
+![이벤트발생](docs/좌석예약(k6).png)
+
+
+
+</details>
+
+
+
+
 
 
 
