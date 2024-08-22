@@ -1,6 +1,9 @@
 #spring.application.name=booking
 #spring.data.redis.host=localhost
 #spring.data.redis.port=6379
+server:
+  port: 8081
+
 spring:
   data:
     redis:
@@ -13,9 +16,9 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/test
     username: root
-    password: 123
+    password: 123qweasdzxc!Q
     driver-class-name: com.mysql.cj.jdbc.Driver
- #     path: /h2-console
+#      path: /h2-console
 #  datasource:
 #    url: jdbc:h2:mem:data
 #    driver-class-name: org.h2.Driver
@@ -27,15 +30,21 @@ spring:
    # database-platform: org.hibernate.dialect.H2Dialect
     database-platform: org.hibernate.dialect.MySQLDialect
 
-  kafka:
-    producer:
-      bootstrap-servers: localhost:9092   # Kafka 클러스터에 대한 초기 연결에 사용할 호스트 : 포트 목록
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer # Kafka로 보낼 메시지의 키를 직렬화하는 방법을 설정
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer # Kafka로 보낼 메시지의 값을 직렬화하는 방법을 설정
 
-    consumer:
-      bootstrap-servers: localhost:9092   # Kafka 컨슈머가 메시지를 수신하기 위해 연결할 Kafka 브로커의 주소와 포트 번호를 설정
-      group-id: concert                   # Kafka 컨슈머 그룹의 ID를 설정
-      auto-offset-reset: earliest         # 컨슈머가 새로운 그룹으로 시작할 때 또는 오프셋을 찾을 수 없을 때, 가장 처음의 메시지부터 읽기 시작할지를 설정
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # 수신한 메시지의 키를 역직렬화하는 방법을 설정
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer # 수신한 메시지의 값을 역직렬화하는 방법을 설정
+  kafka:
+      producer:
+          bootstrap-servers: localhost:9092   # Kafka 클러스터에 대한 초기 연결에 사용할 호스트 : 포트 목록
+          key-serializer: org.apache.kafka.common.serialization.StringSerializer # Kafka로 보낼 메시지의 키를 직렬화하는 방법을 설정
+          value-serializer: org.springframework.kafka.support.serializer.JsonSerializer # Kafka로 보낼 메시지의 값을 직렬화하는 방법을 설정
+      consumer:
+          bootstrap-servers: localhost:9092   # Kafka 컨슈머가 메시지를 수신하기 위해 연결할 Kafka 브로커의 주소와 포트 번호를 설정
+          enable-auto-commit: false
+          group-id: concert                   # Kafka 컨슈머 그룹의 ID를 설정
+          auto-offset-reset: earliest         # 컨슈머가 새로운 그룹으로 시작할 때 또는 오프셋을 찾을 수 없을 때, 가장 처음의 메시지부터 읽기 시작할지를 설정
+          key-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # 수신한 메시지의 키를 역직렬화하는 방법을 설정
+          value-deserializer: org.apache.kafka.common.serialization.StringDeserializer # 수신한 메시지의 값을 역직렬화하는 방법을 설정
+      listener:
+        ack-mode: manual
+logging:
+  level:
+    org.apache.kafka: INFO
