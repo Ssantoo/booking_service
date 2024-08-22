@@ -40,7 +40,7 @@ public class ReservationOutboxRepositoryImpl implements ReservationOutboxReposit
     @Override
     public List<ReservationOutbox> findAllByStatus(ReservationOutboxStatus reservationOutboxStatus) {
         return reservationOutboxJpaRepository.findAllByStatus(reservationOutboxStatus).stream()
-                .map(SeatStatusOutboxEntity::toModel)
+                .map(ReservationOutboxEntity::toModel)
                 .collect(Collectors.toList());
     }
 
